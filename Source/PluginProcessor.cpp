@@ -748,6 +748,12 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         rmp0_range = rmp0_range_;
         rmp1_rate = rmp1_rate_;
         rmp1_range = rmp1_range_;
+        if (rmp0_range != 1024 && rmp0_range != 2048 && rmp0_range != 4096) {
+            rmp0_range = 512;
+        }
+        if (rmp1_range != 1024 && rmp1_range != 2048 && rmp1_range != 4096) {
+            rmp1_range = 512;
+        }
 
         dacl = dacl_;
         dacr = dacr_;
@@ -756,8 +762,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         if (dram_base >= 32767) {
             dram_base = 0;
-        }
-        else {
+        } else {
             dram_base++;
         }
 
@@ -803,8 +808,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         if (buffMin3 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
             buffMin3 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
         }
-        //output and limitting
 
+        //output and limitting
         lOutput_buff[samplesIdx] = float(dacl * min);
         rOutput_buff[samplesIdx] = float(dacr * min);
         if (lOutput_buff[samplesIdx] >= 1.0f) {
@@ -843,6 +848,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffMax3 = 0.0f;
         buffMin3 = 0.0f;
     }
+
     for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
         auto bypassgain = sys_bypassSm.getNextValue();
         auto mutegain = sys_muteSm.getNextValue();
@@ -866,11 +872,10 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             lOutput[samplesIdx] = float(((lOutput_buff[samplesIdx] + lDry) * outgain) + (lBypass * (1 - bypassgain))) * mutegain;
             rOutput[samplesIdx] = float(((rOutput_buff[samplesIdx] + rDry) * outgain) + (rBypass * (1 - bypassgain))) * mutegain;
         }
-        //InputLength++;
     }
 
 
-    
+    if (sys_running > 0) {
     if (sys_wf_send->load() == 0.0f) {
         getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(1.0f);
     } else {
@@ -884,6 +889,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     sys_wf2_min = (buffMin2 * 0.5f) + 0.5f;
     sys_wf3_max = (buffMax3 * 0.5f) + 0.5f;
     sys_wf3_min = (buffMin3 * 0.5f) + 0.5f;
+    }
 }
 
 //==============================================================================

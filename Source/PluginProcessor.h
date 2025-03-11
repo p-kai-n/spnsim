@@ -492,8 +492,6 @@ public:
         }
     };
 
-
-
 private:
     //==============================================================================
     std::unique_ptr<juce::AudioProcessorValueTreeState> parameters;

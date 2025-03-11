@@ -908,15 +908,6 @@ arrbar3 = [document.getElementById("sim_plot3_bar0"),
 	document.getElementById("sim_plot3_bar21"),
 	document.getElementById("sim_plot3_bar22"),
 	document.getElementById("sim_plot3_bar23")];
-barmax0 = barmin0 = barmax1 = barmin1 = barmax2 = barmin2 = barmax3 = barmin3 = 0;
-arrmax0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmin0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmax1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmin1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmax2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmin2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmax3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-arrmin3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
 
 const regname_label0 = document.getElementById("regname_label0");
 const regname_label1 = document.getElementById("regname_label1");
@@ -1016,6 +1007,7 @@ function getLabelValue(received) {
 	}
 };
 
+
 function setPlotBar(max0, min0, max1, min1, max2, min2, max3, min3) {
 	max0 = Number(max0) * 100;
 	min0 = Number(min0) * 100;
@@ -1057,6 +1049,19 @@ function setPlotBar(max0, min0, max1, min1, max2, min2, max3, min3) {
 		arrbar3[i].style = "top:" + (100 - arrmax3[i]) + "%;height:" + (arrmax3[i] - arrmin3[i]) + "%;";
 	}
 };
+function resetPlotBar() {
+	arrmax0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmin0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmax1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmin1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmax2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmin2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmax3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	arrmin3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+	setPlotBar(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5);
+};
+resetPlotBar();
+
 
 function setOverlay(txt) {
 	arrlines = txt.split("\n");
@@ -1412,7 +1417,7 @@ function calcMem(mem) {
 		mem = Number(mem.split("-")[0]) - Number(mem.split("-")[1]);
 	}
 	return(mem);
-}
+};
 
 function calcConst(cst) {
 	if (cst.indexOf("+") != -1) {
@@ -1421,7 +1426,7 @@ function calcConst(cst) {
 		cst = Number(cst.split("-")[0]) - Number(cst.split("-")[1]);
 	}
 	return(cst);
-}
+};
 
 function getOpCode(arrinsts) {
 	arrop = [0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
@@ -1593,20 +1598,11 @@ function run() {
 		sys_sim.style = "opacity: 33%;";
 		sendMessage("ready");
 
-		barmax0 = barmin0 = barmax1 = barmin1 = barmax2 = barmin2 = barmax3 = barmin3 = 0;
-		arrmax0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmin0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmax1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmin1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmax2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmin2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmax3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
-		arrmin3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		resetPlotBar();
 
-		setPlotBar(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 		onCalled({callName:"running", callArg:0});
 	}
-}
+};
 sys_ingain.addEventListener("dblclick", function() {
 	sys_ingain.value = decibelMin;
 	sys_ingainLabel.innerText = getLabelValue((sys_ingain.value - decibelMin).toFixed(1));
@@ -1677,35 +1673,35 @@ function calcKnobValue(t, v, m) {
 			onSliderChanged({sliderName:"pot3_ctrl", sliderValue:v});
 		}
 	}
-}
+};
 function knob0reset() {
 	dragging = false;
 	knob0value = 0;
 	sim_knob0_label.innerText = ".000";
 	sim_knob0_rot.style = "transition:transform 0.25s;";
 	onSliderChanged({sliderName:"pot0_ctrl", sliderValue:0});
-}
+};
 function knob1reset() {
 	dragging = false;
 	knob1value = 0;
 	sim_knob1_label.innerText = ".000";
 	sim_knob1_rot.style = "transition:transform 0.25s;";
 	onSliderChanged({sliderName:"pot1_ctrl", sliderValue:0});
-}
+};
 function knob2reset() {
 	dragging = false;
 	knob2value = 0;
 	sim_knob2_label.innerText = ".000";
 	sim_knob2_rot.style = "transition:transform 0.25s;";
 	onSliderChanged({sliderName:"pot2_ctrl", sliderValue:0});
-}
+};
 function knob3reset() {
 	dragging = false;
 	knob3value = 0;
 	sim_knob3_label.innerText = ".000";
 	sim_knob3_rot.style = "transition:transform 0.25s;";
 	onSliderChanged({sliderName:"pot3_ctrl", sliderValue:0});
-}
+};
 sim_knob0.addEventListener("dblclick", function (e) {knob0reset()});
 sim_knob0.addEventListener("mousedown", function (e) {sim_knob0_rot.style.transition = "transform 0.0s;";});
 sim_knob0.addEventListener("mouseup", function (e) {dragging = false;});
@@ -1755,13 +1751,13 @@ function calcKnobName(v, m) {
 		sim_knob_name3.innerText = regname[fv - 2];
 		sim_knob_box3.style = "";
 	}
-}
+};
 function resetKnobName() {
 	dragging = false;
 	knob_name = 0;
 	sim_knob_name3.innerText = "NONE";
 	sim_knob_box3.style.opacity = "33%";
-}
+};
 sim_knob_name3.addEventListener("dblclick", function (e) {
 	resetKnobName();
 	onSelectChanged({selectName:"knob_name", selectValue:0});
@@ -1806,27 +1802,27 @@ function calcRegName(t, v, m) {
 		regname_label3.innerText = regname[fv];
 		onSelectChanged({selectName:"reg_sel3", selectValue:fv});
 	}
-}
+};
 function resetRegName0() {
 	dragging = false;
 	reg_sel0 = 32;
 	regname_label0.innerText = "ADCL";
-}
+};
 function resetRegName1() {
 	dragging = false;
 	reg_sel1 = 33;
 	regname_label1.innerText = "ADCR";
-}
+};
 function resetRegName2() {
 	dragging = false;
 	reg_sel2 = 34;
 	regname_label2.innerText = "DACL";
-}
+};
 function resetRegName3() {
 	dragging = false;
 	reg_sel3 = 35;
 	regname_label3.innerText = "DACR";
-}
+};
 regname_label0.addEventListener("dblclick", function (e) {
 	resetRegName0();
 	onSelectChanged({selectName:"reg_sel0", selectValue:32});
@@ -1888,7 +1884,7 @@ function clearBybass() {
 		body.style.setProperty("--bdbchk-active", "#808080");
 	}
 	sys_bypass_inner.style.opacity = "0";
-}
+};
 function setBybass() {
 	bypass = true;
 	if (darkUI == false) {
@@ -1907,7 +1903,7 @@ function setBybass() {
 		body.style.setProperty("--bdbchk-active", "#0779DF");
 	}
 	sys_bypass_inner.style = "";
-}
+};
 sys_bypass.addEventListener("click", function() {
 	if (bypass == true) {
 		clearBybass();
@@ -1934,7 +1930,7 @@ function clearMute() {
 		body.style.setProperty("--bdmchk-active", "#808080");
 	}
 	sys_mute_inner.style.opacity = "0";
-}
+};
 function setMute() {
 	mute = true;
 	if (darkUI == false) {
@@ -1953,7 +1949,7 @@ function setMute() {
 		body.style.setProperty("--bdmchk-active", "#0779DF");
 	}
 	sys_mute_inner.style = "";
-}
+};
 sys_mute.addEventListener("click", function() {
 	if (mute == true) {
 		clearMute();
@@ -1975,7 +1971,7 @@ function resizeOverlay(entries) {
 		ce_overlay2.style.height = (entry.contentBoxSize[0].blockSize + 12) + 'px';
 		ce_overlay2.style.width = (entry.contentBoxSize[0].inlineSize + 12) + 'px';
 	}
-}
+};
 codeeditor.addEventListener("keyup", function () {
 	ce_overlay.scrollTop = codeeditor.scrollTop;
 	ce_overlay.scrollLeft = codeeditor.scrollLeft;
@@ -2643,38 +2639,38 @@ function closeTf() {
 	t_f.style = "display: none;";
 	t_file.style = "";
 	show_t_f = false;
-}
+};
 function closeTv() {
 	t_v.style = "display: none;";
 	t_view.style = "";
 	show_t_v = false;
-}
+};
 function closeTt() {
 	t_t.style = "display: none;";
 	t_tool.style = "";
 	show_t_t = false;
-}
+};
 function openTf() {
 	t_f.style = "";
 	t_file.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
 	show_t_f = true;
-}
+};
 function openTv() {
 	t_v.style = "";
 	t_view.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
 	show_t_v = true;
-}
+};
 function openTt() {
 	t_t.style = "";
 	t_tool.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
 	show_t_t = true;
-}
+};
 body.addEventListener("mousedown", function () {closeTf();closeTv();closeTt();});
 
 function drawMenuChk(t) {
 	t.innerHTML = 
 "<svg width='18' height='18'><line x1='5.5' y1='8' x2='9.1' y2='11.5' stroke='black' stroke-width='1.1' /><line x1='9' y1='11' x2='15' y2='5' stroke='black' stroke-width='1.1' /></svg>";
-}
+};
 
 t_f.addEventListener("mousedown", function () {event.stopPropagation();});
 t_file.addEventListener("mousedown", function () {
@@ -2773,7 +2769,7 @@ function setLight() {
 
 	if (bypass == true) {setBybass();} else {clearBybass();}
 	if (mute == true) {setMute();} else {clearMute();}
-}
+};
 function setDark() {
 	darkUI = true;
 	t_v_dark_c.style.opacity = "1";
@@ -2830,7 +2826,7 @@ function setDark() {
 
 	if (bypass == true) {setBybass();} else {clearBybass();}
 	if (mute == true) {setMute();} else {clearMute();}
-}
+};
 setLight();
 function setSize(s) {
 	size = s;
@@ -2850,7 +2846,7 @@ function setSize(s) {
 		t_v_s1_c.style.opacity = "1";
 		drawMenuChk(t_v_s1_c);
 	}
-}
+};
 setSize(7);
 sf = false;
 function showFont() {
@@ -2861,13 +2857,13 @@ function showFont() {
 	edit_area.style.height = "calc(100% - 20px - 20px)";
 	t_v_font_c.style.opacity = "1";
 	drawMenuChk(t_v_font_c);
-}
+};
 function hideFont() {
 	sf = false;
 	edit_top.style = "";
 	edit_area.style.height = "";
 	t_v_font_c.style = "";
-}
+};
 function switchShowFont() {if (sf == false) {showFont();} else {hideFont();}}
 hideFont();
 t_v.addEventListener("mousedown", function () {event.stopPropagation();});
@@ -2921,11 +2917,11 @@ function setResampling() {
 	resampling = true;
 	t_t_rs_c.style.opacity = "1";
 	drawMenuChk(t_t_rs_c);
-}
+};
 function clearResampling() {
 	resampling = false;
 	t_t_rs_c.style = "";
-}
+};
 setResampling();
 t_t.addEventListener("mousedown", function () {event.stopPropagation();});
 t_tool.addEventListener("mousedown", function () {
@@ -2955,7 +2951,7 @@ function setFont(f) {
 		edit_font.value = ff;
 	}
 	body.style.setProperty("--code-font", ff);
-}
+};
 edit_ap.addEventListener("click", function () {
 	setFont(edit_font.value);
 	onTextChanged({textName:"ui_font", textContent:edit_font.value});
@@ -2975,19 +2971,19 @@ function setLineHeight() {
 	ce_overlay.style.lineHeight = fontsize + lineheight + "px";
 	ce_lines.style.lineHeight = fontsize + lineheight + "px";
 	syncScroll();
-}
+};
 function setFontSize() {
 	if (fontsize < 0) {fontsize = 0;} else if (fontsize > 50) {fontsize = 50;}
 	codeeditor.style.fontSize = fontsize + "px";
 	ce_overlay.style.fontSize = fontsize + "px";
 	if (fontsize <= 12) {ce_lines.style.fontSize = fontsize + "px";}
 	setLineHeight();
-}
+};
 function resetFontSize() {
 	fontsize = 12;
 	lineheight = 1;
 	setFontSize();
-}
+};
 ce_tool_lp.addEventListener("click", function () {
 	lineheight++;
 	setLineHeight();
@@ -3018,14 +3014,9 @@ resetFontSize();
 
 // Event callback from C++
 function onParameterChanged(jsonData){
-	// This is the function that will be called from C++
-	//console.log('JSON from C++: ', jsonData);
-
-	// Access the 'type' property in the JSON data
 	const parameterName = jsonData.parameterName;
 	const jValue = jsonData.parameterValue;
 
-	// Update the HTML label with the message
 	if (parameterName === "sys_ingain") {
 		//console.log('sys_ingain: ', jValue);
 		sys_ingain.value = jValue;
@@ -3078,7 +3069,7 @@ function onParameterChanged(jsonData){
 			knob3reset()
 		}
 	}
-	else if (parameterName === "sys_wf_send" && mute == false) {
+	else if (parameterName === "sys_wf_send" && running == true) {
 		setPlotBar(jsonData.wf0max, jsonData.wf0min,
 			jsonData.wf1max, jsonData.wf1min,
 			jsonData.wf2max, jsonData.wf2min,

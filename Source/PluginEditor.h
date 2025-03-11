@@ -12,7 +12,7 @@
 #include <webkit2/webkit2.h>
 #endif
 
-#include <E:\Music\JUCE_CHOC\CHOC\gui/choc_WebView.h>
+#include <gui/choc_WebView.h>
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final
@@ -21,7 +21,8 @@ class AudioPluginAudioProcessorEditor final
     , private juce::ValueTree::Listener
 {
 public:
-    explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&, float& w0a, float& w0i, float& w1a, float& w1i, float& w2a, float& w2i, float& w3a, float& w3i,
+    explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&,
+        float& w0a, float& w0i, float& w1a, float& w1i, float& w2a, float& w2i, float& w3a, float& w3i,
         juce::String&, juce::File&, juce::String&, unsigned __int8&, juce::String&, std::array<int, 384>&);
     ~AudioPluginAudioProcessorEditor() override;
 

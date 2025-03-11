@@ -39,9 +39,10 @@ namespace
 }
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor
-    (AudioPluginAudioProcessor& p, float& w0a, float& w0i, float& w1a, float& w1i, float& w2a, float& w2i, float& w3a, float& w3i,
-        juce::String& font, juce::File& f, juce::String& e, unsigned __int8& r, juce::String& c, std::array<int, 384>& op)
+AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
+    AudioPluginAudioProcessor& p, float& w0a, float& w0i, float& w1a, float& w1i, float& w2a, float& w2i, float& w3a, float& w3i,
+    juce::String& font, juce::File& f, juce::String& e, unsigned __int8& r, juce::String& c, std::array<int, 384>& op)
+
     : AudioProcessorEditor(&p), processorRef(p), valueTreeState(p.getAPVTS()),
     sys_wf0_max(w0a), sys_wf0_min(w0i), sys_wf1_max(w1a), sys_wf1_min(w1i), sys_wf2_max(w2a), sys_wf2_min(w2i), sys_wf3_max(w3a), sys_wf3_min(w3i),
     ui_font(font), sys_file(f), sys_edited(e), sys_running(r), sys_code(c), sim_op(op)
@@ -108,16 +109,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor
         const auto choc_json_string = choc::json::toString(args);
         const auto juce_json = juce::JSON::parse(choc_json_string);
         //juce::Logger::outputDebugString(choc_json_string);
-
-        //if (false)
-        //{
-        //    juce::Logger::outputDebugString(juce_json[0]["sliderName"]);
-        //    juce::Logger::outputDebugString(juce_json[0]["sliderValue"]);
-        //    juce::Logger::outputDebugString(juce_json[0]["sliderRangeMin"]);
-        //    juce::Logger::outputDebugString(juce_json[0]["sliderRangeMax"]);
-        //}
-
-        //DBG(normalised_value);
 
         if (juce_json[0]["sliderName"] == "sys_ingain") {
             safe_this->valueTreeState.getParameter("sys_ingain")->setValueNotifyingHost((float)juce_json[0]["sliderValue"] * 0.01f);
@@ -497,10 +488,10 @@ void AudioPluginAudioProcessorEditor::resized()
     auto rect_ui = getLocalBounds();
 
     auto gainRect = rect_ui.removeFromTop (paramControlHeight);
-    //sys_ingainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
-    //sys_ingainSlider.setBounds (gainRect);
+    /*sys_ingainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
+    sys_ingainSlider.setBounds (gainRect);
 
-    //invertButton.setBounds (rect_ui.removeFromTop (paramControlHeight));
+    invertButton.setBounds (rect_ui.removeFromTop (paramControlHeight));*/
 
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
@@ -634,14 +625,7 @@ void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& param
         json->setProperty("parameterValue", sys_running);
         const auto js_args_json = juce::JSON::toString(json.get());
         javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
-    }/*
-    else if (parameterID == "invertPhase") {
-        juce::DynamicObject::Ptr json = new juce::DynamicObject();
-        json->setProperty ("parameterName", "invertPhase");
-        json->setProperty ("parameterValue", newValue);
-        const auto js_args_json = juce::JSON::toString (json.get());
-        javascript = juce::String ("onParameterChanged(") + js_args_json + juce::String (")");
-    }*/
+    }
     else if (parameterID == "sys_bypass") {
         json->setProperty("parameterName", "sys_bypass");
         json->setProperty("parameterValue", newValue ? 1.0f : 0.0f);
@@ -653,7 +637,14 @@ void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& param
         json->setProperty("parameterValue", newValue ? 1.0f : 0.0f);
         const auto js_args_json = juce::JSON::toString(json.get());
         javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
-    }
+    }/*
+    else if (parameterID == "invertPhase") {
+        juce::DynamicObject::Ptr json = new juce::DynamicObject();
+        json->setProperty ("parameterName", "invertPhase");
+        json->setProperty ("parameterValue", newValue);
+        const auto js_args_json = juce::JSON::toString (json.get());
+        javascript = juce::String ("onParameterChanged(") + js_args_json + juce::String (")");
+    }*/
 
     if (javascript.isNotEmpty())
     {
