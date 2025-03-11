@@ -1,0 +1,3162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>spnsim</title>
+<style>
+
+*{
+	box-sizing: border-box;
+}
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	user-select: none;
+	margin: 0;
+	overflow: hidden;
+	font-family: system-ui;
+	font-size: 12px;
+	background-color: var(--bg);
+	color: var(--fg);
+}
+
+#tool {
+	border-bottom: 2px solid var(--bd-light);
+	display: flex;
+}
+table {
+	border-collapse: collapse;
+}
+.toolbar {
+	height: 17px;
+}
+.toolbar_text {
+	padding: 0 6px;
+	height: 18px;
+	margin-bottom: 1px;
+	border: 1px solid var(--bg);
+	transition: background-color 0.15s, border-color 0.15s;
+}
+.toolbar_text:hover {
+	background-color: var(--bg-tool-hover);
+	border: 1px solid var(--bd-tool-hover);
+}
+.toolbar_inner {
+	line-height: 20px;
+	position: absolute;
+	top: 17px;
+	background-color: var(--bg-menu);
+	border: solid 1px #CCCCCC;
+	box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+	z-index: 1;
+	padding: 2px;
+}
+.toolbar_inner tr:has(.toolbar_inner_chk):hover,
+.toolbar_inner tr:has(.toolbar_inner_txt):hover,
+.toolbar_inner tr:has(.toolbar_inner_cmd):hover {
+	background-color: var(--bg-tool-inner-hover);
+}
+.toolbar_inner_chk {
+	width: 22px;
+	line-height: 1;
+	background-color: var(--bg-tool-inner-chk);
+	opacity: 0;
+}
+.toolbar_inner_txt {
+	padding-left: 8px;
+}
+.toolbar_inner_cmd {
+	text-align: right;
+	padding: 0 12px 0 24px;
+}
+.toolbar_inner_hr {
+	padding-left: 28px;
+}
+tr:has(.toolbar_inner_hr) {
+	font-size: 4px;
+}
+.toolbar_inner_hr > hr {
+	border: none;
+	border-top: 1px solid var(--bg-tool-inner-hr);
+}
+#filename_label {
+	position: absolute;
+	right: 0;
+	padding: 0 16px 2px 24px;
+	background-color: var(--bg-label);
+	clip-path: polygon(10px 0%, 0% 100%, 100% 100%, 100% 0%);
+}
+
+#main {
+	height: calc(100% - 20px);
+	display: flex;
+	align-items: stretch;
+	text-align: center;
+}
+#system {
+	flex: 1;
+	padding: 4px 8px;
+}
+
+#system_ctrl {
+	display: flex;
+	height: 56px;
+	border-bottom: 1px solid #C0C0C0;
+}
+.ctrl_item {
+	flex: 1;
+	padding: 5px;
+}
+.indent {
+	padding-left: 10px;
+}
+.side_label {
+	flex: initial;
+	font-size: 14px;
+	margin: 17px 0;
+	width: 34px;
+	min-width: 34px;
+}
+.ctrl_slider {
+	flex: 5;
+	display: flex;
+	min-width: 100px;
+}
+.ctrl_slider_body {
+	flex: initial;
+	width: 90%;
+}
+
+#sys_sim {
+	height: calc(100% - 32px);
+}
+
+input[type="range"] {
+	width: 100%;
+	margin-top: 6px;
+	background-color: var(--blue-base);
+	border: none;
+	height: 3px;
+	-webkit-appearance: none;
+	outline: none;
+	border-radius: 2px;
+	box-shadow: 0 0 6px rgba(122, 190, 240, 0.8);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 10px;
+	height: 10px;
+	background-color: var(--blue-heavy);
+	border-radius: 100%;
+	cursor: pointer;
+	transform: translate(0, -9px);
+}
+
+input[type="checkbox"] {
+	display: none;
+}
+
+#sys_bypass, #sys_mute {
+	margin-top: 4px;
+	display: inline-block;
+	width: 13px;
+	height: 13px;
+	border-radius: 1.5px;
+}
+#sys_bypass {
+	background-color: var(--bg-bchk-base);
+	border: solid 1px var(--bdbchk-base);
+}
+#sys_bypass:hover {
+	background-color: var(--bg-bchk-hover);
+	border: solid 1px var(--bdbchk-hover);
+}
+#sys_bypass:active {
+	background-color: var(--bg-bchk-active);
+	border: solid 1px var(--bdbchk-active);
+}
+#sys_mute {
+	background-color: var(--bg-mchk-base);
+	border: solid 1px var(--bdmchk-base);
+}
+#sys_mute:hover {
+	background-color: var(--bg-mchk-hover);
+	border: solid 1px var(--bdmchk-hover);
+}
+#sys_mute:active {
+	background-color: var(--bg-mchk-active);
+	border: solid 1px var(--bdmchk-active);
+}
+
+#sim_knobs {
+	height: 64px;
+	display: flex;
+	align-items: center;
+}
+.sim_knob_box {
+	flex: 1;
+	padding: 6px 4px 0 4px;
+	display: flex;
+}
+.sim_knob_frame {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	min-height: 40px;
+	min-width: 40px;
+	max-height: 40px;
+	max-width: 40px;
+	margin: 4px;
+	border: solid 2px rgba(0, 0, 0, 0);
+}
+.sim_knob_frame, .sim_knob_frame * {
+	box-sizing: content-box;
+}
+.sim_knob_outline {
+	position: absolute;
+	overflow: visible;
+	-webkit-filter: drop-shadow(0 0 3px var(--blue-light));
+	transform: rotate(120deg);
+}
+.sim_knob_outline > circle {
+	stroke-dasharray: 104.67 1000;
+}
+.sim_knob_body {
+	flex: 1;
+	margin: 0 auto;
+	border: solid 2px var(--blue-base);
+}
+.sim_knob_body, .sim_knob_body > * {
+	min-height: 28px;
+	min-width: 28px;
+	max-height: 28px;
+	max-width: 28px;
+	border-radius: 100%;
+}
+.sim_knob {
+	position: absolute;
+	z-index: 2;
+	cursor: pointer;
+}
+.sim_knob_rot {
+	transform: rotate(-150deg);
+}
+.sim_knob_point {
+	height: 10px;
+	width: 4px;
+	min-height: 10px;
+	min-width: 4px;
+	max-height: 10px;
+	max-width: 4px;
+	margin: 0 auto;
+	border-radius: 2px;
+	background-color: var(--blue-heavy);
+}
+.sim_knob_labels {
+	width: 32px;
+	min-width: 32px;
+	max-width: 48px;
+	padding-top: 10px;
+	flex: 1;
+	line-height: 15px;
+}
+.sim_knob_label {
+	font-size: 14px;
+}
+#sim_knob_name3{
+	cursor: pointer;
+}
+
+#sim_viewers {
+	height: calc(100% - 56px - 64px);
+	padding: 2px 0;
+}
+.sim_plot {
+	position: relative;
+	display: flex;
+	justify-content: space-evenly;
+	height: 25%;
+	width: 100%;
+	background-color: var(--bg-plot);
+	margin: 1px;
+	border: 1px solid var(--bd-plot);
+	overflow: hidden;
+}
+.sim_plot_barbox {
+	flex: 1;
+	margin: 0 4px;
+	min-width: 3px;
+	max-width: 12px;
+}
+.sim_plot_bar {
+	top: 50%;
+	background-color: #1FB49A;
+	border-bottom: 3px solid #1FB49A;
+	box-shadow: 0 0 6px #1FB49A;
+	position: relative;
+}
+.regname_label, .regname_label_drag {
+	position: absolute;
+	right: -1px;
+	top: -1px;
+	padding: 0 16px 2px 24px;
+	height: 18px;
+	background-color: var(--bg-label);
+	border-top: solid 1px var(--bg-label);
+	border-right: solid 1px var(--bg-label);
+	clip-path: polygon(0% 0%, 10px 100%, 100% 100%, 100% 0%);
+	cursor: pointer;
+}
+
+#sys_run {
+	padding: 4px 1px 0;
+}
+#sys_runbutton {
+	height: 30px;
+	width: 100%;
+	color: var(--fg);
+	background-color: var(--bg-button-base);
+	border: solid 1px var(--bd-button-base);
+	border-radius: 2px;
+}
+#sys_runbutton:hover {
+	background-color: var(--bg-button-hover);
+	border: solid 1px var(--bd-button-hover);
+}
+#sys_runbutton:active {
+	background-color: var(--bg-button-active);
+	border: solid 1px var(--bd-button-active);
+}
+
+#editor {
+	flex: 2;
+	align-items: stretch;
+	border-left: 2px solid var(--bd-heavy);
+	text-align: left;
+}
+#edit_top {
+	display: flex;
+	align-items: center;
+	height: 0px;
+	line-height: 10px;
+	opacity: 0;
+	transition: height 0.05s, opacity 0.05s;
+}
+#edit_top > * {
+	height: 17px;
+	line-height: 0;
+	color: var(--fg);
+}
+#edit_font {
+	width: calc(100% - 32px);
+	padding-left: 8px;
+	border: none;
+	outline: none;
+	background-color: var(--bg-editor);
+}
+#edit_ap, #edit_cl {
+	height: 13px;
+	width: 13px;
+	margin-left: 1px;
+	line-height: 0;
+	opacity: 0.333;
+}
+#edit_ap:hover, #edit_cl:hover {
+	opacity: 1;
+}
+#edit_area {
+	display: flex;
+	height: calc(100% - 20px);
+	transition: height 0.05s;
+}
+#edit_area_right {
+	width: calc(100% - 48px);
+	height: 100%;
+}
+textarea {
+	display: block;
+	height: 100%;
+	width: 100%;
+	resize: none;
+	border: none;
+	scrollbar-width: thin;
+	color: var(--code);
+	background-color: var(--bg-editor);
+}
+textarea::selection {
+	background-color: var(--bg-select);
+	color: #FFF;
+}
+textarea:focus {
+	outline: none;
+}
+textarea, #ce_overlay, #ce_lines {
+	padding: 6px;
+	font-family: var(--code-font);
+	font-size: 12px;
+	line-height: 13px;
+	overflow: auto;
+	white-space: pre;
+}
+#ce_overlay {
+	position: absolute;
+	overflow: hidden;
+	text-align: left;
+	color: rgba(0, 0, 0, 0);
+	mix-blend-mode: screen;
+	pointer-events: none;
+}
+.ce_comment {
+	background-color: var(--sh-comment);
+}
+.ce_label {
+	background-color: var(--sh-label);
+}
+.ce_mem {
+	background-color: var(--sh-mem);
+}
+.ce_equ, .ce_reg {
+	background-color: var(--sh-equ);
+}
+.ce_flag {
+	background-color: var(--sh-flag);
+}
+#ce_lines {
+	padding-right: 10px;
+	width: 48px;
+	height: 100%;
+	text-align: right;
+	color: var(--fg-lines);
+	background-color: var(--bg-sub);
+	border-right: 1px solid var(--bd-thin);
+	overflow: hidden;
+	pointer-events: none;
+}
+#ce_overlay2 {
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: flex-end;
+	position: absolute;
+	pointer-events: none;
+}
+#ce_tool {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin: 2px;
+}
+#ce_tool_side, #ce_tool_bottom {
+	pointer-events: auto;
+}
+#ce_tool_bottom {
+	display: flex;
+}
+#ce_tool_lp, #ce_tool_lm, #ce_tool_sp, #ce_tool_sm, #ce_tool_sz {
+	height: 13px;
+	width: 13px;
+	line-height: 0;
+	opacity: 0.333;
+}
+#ce_tool_lp:hover, #ce_tool_lm:hover, #ce_tool_sp:hover, #ce_tool_sm:hover, #ce_tool_sz:hover {
+	opacity: 1;
+}
+#status {
+	width: 100%;
+	border-top: 2px solid var(--bd-light);
+	padding: 0 4px;
+}
+#message {
+	float: left;
+}
+#status_num {
+	float: right;
+}
+
+#setting {
+	flex: 2;
+	align-items: stretch;
+	background-color: var(--bg-sub);
+	border-left: 2px solid var(--bd-heavy);
+	display: none;
+}
+
+
+</style>
+</head>
+<body id="body">
+
+<div id="tool">
+	<div class="toolbar"><div class="toolbar_inner" id="t_f" style="display:none;"><table>
+	<tr id="t_f_open"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Open</td><td class="toolbar_inner_cmd">Ctrl + O</td></tr>
+	<tr id="t_f_save"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Save</td><td class="toolbar_inner_cmd">Ctrl + S</td></tr>
+	<tr id="t_f_saveas"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Save As</td><td class="toolbar_inner_cmd">Ctrl + Shift + S</td></tr>
+	<tr><td class="toolbar_inner_hr" colspan="3"><hr></td></tr>
+	<tr id="t_f_close"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Close</td><td class="toolbar_inner_cmd">Ctrl + W</td></tr>
+	</table></div><span class="toolbar_text" id="t_file">File</span></div>
+
+	<div class="toolbar"><div class="toolbar_inner" id="t_v" style="display:none;"><table>
+	<tr id="t_v_s3"><td id="t_v_s3_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Size : 640x360</td><td class="toolbar_inner_cmd"></td></tr>
+	<tr id="t_v_s7"><td id="t_v_s7_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Size : 1280x720</td><td class="toolbar_inner_cmd"></td></tr>
+	<tr id="t_v_s1"><td id="t_v_s1_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Size : 1920x1080</td><td class="toolbar_inner_cmd"></td></tr>
+	<tr><td class="toolbar_inner_hr" colspan="3"><hr></tr>
+	<tr id="t_v_font"><td id="t_v_font_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Show Editor Font</td><td class="toolbar_inner_cmd"></td></tr>
+	<tr id="t_v_dark"><td id="t_v_dark_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Enable Dark UI</td><td class="toolbar_inner_cmd"></td></tr>
+	<tr><td class="toolbar_inner_hr" colspan="3"><hr></tr>
+	<tr id="t_v_reset"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Reset Editor</td><td class="toolbar_inner_cmd"></td></tr>
+	</table></div><span class="toolbar_text" id="t_view">View</span><td class="toolbar_inner_cmd"></td></div>
+
+	<div class="toolbar"><div class="toolbar_inner" id="t_t" style="display:none;"><table>
+	<tr id="t_t_rs"><td id="t_t_rs_c" class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Enable 2/3 Resampling</td><td class="toolbar_inner_cmd"></td></tr>
+	</table></div><span class="toolbar_text" id="t_tool">Tool</span></div>
+
+	<div id="filename_label" style="display:none;"></div>
+</div>
+
+<div id="main">
+<div id="system">
+<div id="sys_sim" style="opacity: 33%;">
+<div id="system_ctrl">
+
+<div class="ctrl_slider ctrl_item">
+	<div class="ctrl_slider_body"><span class="indent">INPUT</span><br><input type="range" min="0" step="0.5" id="sys_ingain" list="markers"></div>
+	<div class="side_label"><span id="sys_ingainLabel">0.0</span></div>
+</div>
+<div class="ctrl_slider ctrl_item">
+	<div class="ctrl_slider_body"><span class="indent">OUTPUT</span><br><input type="range" min="0" step="0.5" id="sys_outgain" list="markers"></div>
+	<div class="side_label"><span id="sys_outgainLabel">0.0</span></div>
+</div>
+<datalist id="markers">
+	<option value="60"></option>
+	<option value="54"></option>
+	<option value="48"></option>
+	<option value="42"></option>
+	<option value="36"></option>
+	<option value="30"></option>
+	<option value="24"></option>
+	<option value="18"></option>
+	<option value="12"></option>
+	<option value="6"></option>
+	<option value="0"></option>
+</datalist>
+
+<div class="ctrl_item">
+	BYPASS<span id="sys_bypassLabel"></span><br>
+	<span id="sys_bypass">
+		<svg id="sys_bypass_inner" width="13" height="13">
+			<line x1="1.5" y1="5.5" x2="5" y2="9" stroke="white" stroke-width="2.1" />
+			<line x1="4" y1="8.5" x2="9.25" y2="1.5" stroke="white" stroke-width="2.1" />
+		</svg>
+	</span>
+</div>
+<div class="ctrl_item">
+	MUTE<span id="sys_muteLabel"></span><br>
+	<span id="sys_mute">
+		<svg id="sys_mute_inner" width="13" height="13">
+			<line x1="1.5" y1="5.5" x2="5" y2="9" stroke="white" stroke-width="2.1" />
+			<line x1="4" y1="8.5" x2="9.25" y2="1.5" stroke="white" stroke-width="2.1" />
+		</svg>
+	</span>
+</div>
+</div>
+
+<div id="sim_knobs">
+	<div class="sim_knob_box">
+		<div class="sim_knob_frame">
+			<svg class="sim_knob_outline" id="sim_knob_outline_circle0" width="40" height="40"></svg>
+			<div class="sim_knob_body"><div id="sim_knob0" class="sim_knob"></div><div id="sim_knob0_rot" class="sim_knob_rot"><div class="sim_knob_point">
+		</div></div></div></div>
+		<div class="sim_knob_labels"><div class="sim_knob_name">POT0</div><div id="sim_knob0_label" class="sim_knob_label">.000</div></div>
+	</div>
+	<div class="sim_knob_box">
+		<div class="sim_knob_frame">
+			<svg class="sim_knob_outline" id="sim_knob_outline_circle1" width="40" height="40"></svg>
+			<div class="sim_knob_body"><div id="sim_knob1" class="sim_knob"></div><div id="sim_knob1_rot" class="sim_knob_rot"><div class="sim_knob_point">
+		</div></div></div></div>
+		<div class="sim_knob_labels"><div class="sim_knob_name">POT1</div><div id="sim_knob1_label" class="sim_knob_label">.000</div></div>
+	</div>
+	<div class="sim_knob_box">
+		<div class="sim_knob_frame">
+			<svg class="sim_knob_outline" id="sim_knob_outline_circle2" width="40" height="40"></svg>
+			<div class="sim_knob_body"><div id="sim_knob2" class="sim_knob"></div><div id="sim_knob2_rot" class="sim_knob_rot"><div class="sim_knob_point">
+		</div></div></div></div>
+		<div class="sim_knob_labels"><div class="sim_knob_name">POT2</div><div id="sim_knob2_label" class="sim_knob_label">.000</div></div>
+	</div>
+	<div id="sim_knob_box3" class="sim_knob_box">
+		<div class="sim_knob_frame">
+			<svg class="sim_knob_outline" id="sim_knob_outline_circle3" width="40" height="40"></svg>
+			<div class="sim_knob_body"><div id="sim_knob3" class="sim_knob"></div><div id="sim_knob3_rot" class="sim_knob_rot"><div class="sim_knob_point">
+		</div></div></div></div>
+		<div class="sim_knob_labels"><div id="sim_knob_name3" class="sim_knob_name">NONE</div><div id="sim_knob3_label" class="sim_knob_label">.000</div></div>
+	</div>
+</div>
+
+<div id="sim_viewers">
+	<div class="sim_plot">
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar0" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar1" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar2" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar3" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar4" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar5" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar6" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar7" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar8" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar9" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar10" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar11" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar12" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar13" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar14" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar15" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar16" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar17" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar18" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar19" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar20" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar21" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar22" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot0_bar23" class="sim_plot_bar"></div></div>
+		<div id="regname_label0" class="regname_label">ADCL</div></div>
+
+	<div class="sim_plot">
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar0" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar1" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar2" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar3" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar4" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar5" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar6" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar7" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar8" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar9" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar10" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar11" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar12" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar13" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar14" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar15" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar16" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar17" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar18" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar19" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar20" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar21" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar22" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot1_bar23" class="sim_plot_bar"></div></div>
+		<div id="regname_label1" class="regname_label">ADCR</div></div>
+
+	<div class="sim_plot">
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar0" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar1" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar2" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar3" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar4" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar5" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar6" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar7" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar8" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar9" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar10" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar11" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar12" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar13" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar14" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar15" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar16" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar17" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar18" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar19" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar20" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar21" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar22" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot2_bar23" class="sim_plot_bar"></div></div>
+		<div id="regname_label2" class="regname_label">DACL</div></div>
+
+	<div class="sim_plot">
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar0" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar1" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar2" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar3" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar4" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar5" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar6" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar7" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar8" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar9" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar10" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar11" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar12" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar13" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar14" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar15" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar16" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar17" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar18" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar19" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar20" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar21" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar22" class="sim_plot_bar"></div></div>
+		<div class="sim_plot_barbox"><div id="sim_plot3_bar23" class="sim_plot_bar"></div></div>
+		<div id="regname_label3" class="regname_label">DACR</div></div>
+</div>
+</div>
+
+<div id="sys_run">
+	<button id="sys_runbutton">COMPILE / RUN</button>
+</div>
+
+</div>
+
+
+<div id="editor">
+	<div id="edit_top">
+		<input id="edit_font" value='"Menlo", "Consolas", "Monaco", "Liberation Mono", "Lucida Console", monospace' />
+		<div id="edit_ap">
+			<svg width="12" height="12">
+				<line x1="2" y1="5" x2="5" y2="10" stroke="#BBB" stroke-width="2.1" />
+				<line x1="5" y1="10" x2="10" y2="3" stroke="#BBB" stroke-width="2.1" />
+			</svg>
+		</div>
+		<div id="edit_cl">
+			<svg width="12" height="12">
+				<line x1="2" y1="2" x2="10" y2="10" stroke="#BBB" stroke-width="2.1" />
+				<line x1="2" y1="10" x2="10" y2="2" stroke="#BBB" stroke-width="2.1" />
+			</svg>
+		</div>
+	</div>
+	<div id="edit_area">
+		<div id="edit_area_left">
+			<div id="ce_lines">1</div>
+		</div>
+		<div id="edit_area_right">
+			<div id="ce_overlay"></div>
+			<div id="ce_overlay2">
+				<div id="ce_tool">
+					<div id="ce_tool_side">
+						<div id="ce_tool_lp">
+							<svg width="12" height="12">
+								<line x1="2" y1="9" x2="6" y2="4" stroke="#BBB" stroke-width="2.1" />
+								<line x1="6" y1="4" x2="10" y2="9" stroke="#BBB" stroke-width="2.1" />
+							</svg>
+						</div>
+						<div id="ce_tool_lm">
+							<svg width="12" height="12">
+								<line x1="2" y1="3" x2="6" y2="8" stroke="#BBB" stroke-width="2.1" />
+								<line x1="6" y1="8" x2="10" y2="3" stroke="#BBB" stroke-width="2.1" />
+							</svg>
+						</div>
+					</div>
+					<div id="ce_tool_bottom">
+						<div id="ce_tool_sp">
+							<svg width="12" height="12">
+								<line x1="2" y1="6" x2="10" y2="6" stroke="#BBB" stroke-width="2.1" />
+								<line x1="6" y1="2" x2="6" y2="10" stroke="#BBB" stroke-width="2.1" />
+							</svg>
+						</div>
+						<div id="ce_tool_sm">
+							<svg width="12" height="12">
+								<line x1="2" y1="6" x2="10" y2="6" stroke="#BBB" stroke-width="2.1" />
+							</svg>
+						</div>
+						<div id="ce_tool_sz">
+							<svg width="12" height="12">
+								<ellipse cx="6" cy="6" rx="3" ry="4" stroke="#BBB" fill="none" stroke-width="2.1" />
+							</svg>
+						</div>
+					</div>
+				</div>
+			</div>
+			<textarea id="codeeditor" spellcheck="false"></textarea>
+		</div>
+	</div>
+	<div id="status">
+		<div id="message"></div>
+		<div id="status_num">
+			instructions : <span id="insts_label">0</span>
+			&nbsp&nbsp|&nbsp&nbspmem : <span id="mem_label">0</span>
+		</div>
+	</div>
+</div>
+</div>
+
+<input id="loader" type="file" style="display:none;" accept=".ttf,.otf,.ttc">
+
+<script>
+const body = document.getElementById("body");
+
+const sys_ingain = document.getElementById("sys_ingain");
+const sys_ingainLabel = document.getElementById("sys_ingainLabel");
+const sys_outgain = document.getElementById("sys_outgain");
+const sys_outgainLabel = document.getElementById("sys_outgainLabel");
+const decibelMin = 48;
+const decibelMax = 12;
+const decibelRange = decibelMin + decibelMax;
+sys_ingain.value = decibelMin;
+sys_ingain.max = decibelRange;
+sys_outgain.value = decibelMin;
+sys_outgain.max = decibelRange;
+
+const sys_bypass = document.getElementById("sys_bypass");
+const sys_bypass_inner = document.getElementById("sys_bypass_inner");
+const sys_mute = document.getElementById("sys_mute");
+const sys_mute_inner = document.getElementById("sys_mute_inner");
+
+arrbar0 = [document.getElementById("sim_plot0_bar0"),
+	document.getElementById("sim_plot0_bar1"),
+	document.getElementById("sim_plot0_bar2"),
+	document.getElementById("sim_plot0_bar3"),
+	document.getElementById("sim_plot0_bar4"),
+	document.getElementById("sim_plot0_bar5"),
+	document.getElementById("sim_plot0_bar6"),
+	document.getElementById("sim_plot0_bar7"),
+	document.getElementById("sim_plot0_bar8"),
+	document.getElementById("sim_plot0_bar9"),
+	document.getElementById("sim_plot0_bar10"),
+	document.getElementById("sim_plot0_bar11"),
+	document.getElementById("sim_plot0_bar12"),
+	document.getElementById("sim_plot0_bar13"),
+	document.getElementById("sim_plot0_bar14"),
+	document.getElementById("sim_plot0_bar15"),
+	document.getElementById("sim_plot0_bar16"),
+	document.getElementById("sim_plot0_bar17"),
+	document.getElementById("sim_plot0_bar18"),
+	document.getElementById("sim_plot0_bar19"),
+	document.getElementById("sim_plot0_bar20"),
+	document.getElementById("sim_plot0_bar21"),
+	document.getElementById("sim_plot0_bar22"),
+	document.getElementById("sim_plot0_bar23")];
+
+arrbar1 = [document.getElementById("sim_plot1_bar0"),
+	document.getElementById("sim_plot1_bar1"),
+	document.getElementById("sim_plot1_bar2"),
+	document.getElementById("sim_plot1_bar3"),
+	document.getElementById("sim_plot1_bar4"),
+	document.getElementById("sim_plot1_bar5"),
+	document.getElementById("sim_plot1_bar6"),
+	document.getElementById("sim_plot1_bar7"),
+	document.getElementById("sim_plot1_bar8"),
+	document.getElementById("sim_plot1_bar9"),
+	document.getElementById("sim_plot1_bar10"),
+	document.getElementById("sim_plot1_bar11"),
+	document.getElementById("sim_plot1_bar12"),
+	document.getElementById("sim_plot1_bar13"),
+	document.getElementById("sim_plot1_bar14"),
+	document.getElementById("sim_plot1_bar15"),
+	document.getElementById("sim_plot1_bar16"),
+	document.getElementById("sim_plot1_bar17"),
+	document.getElementById("sim_plot1_bar18"),
+	document.getElementById("sim_plot1_bar19"),
+	document.getElementById("sim_plot1_bar20"),
+	document.getElementById("sim_plot1_bar21"),
+	document.getElementById("sim_plot1_bar22"),
+	document.getElementById("sim_plot1_bar23")];
+
+arrbar2 = [document.getElementById("sim_plot2_bar0"),
+	document.getElementById("sim_plot2_bar1"),
+	document.getElementById("sim_plot2_bar2"),
+	document.getElementById("sim_plot2_bar3"),
+	document.getElementById("sim_plot2_bar4"),
+	document.getElementById("sim_plot2_bar5"),
+	document.getElementById("sim_plot2_bar6"),
+	document.getElementById("sim_plot2_bar7"),
+	document.getElementById("sim_plot2_bar8"),
+	document.getElementById("sim_plot2_bar9"),
+	document.getElementById("sim_plot2_bar10"),
+	document.getElementById("sim_plot2_bar11"),
+	document.getElementById("sim_plot2_bar12"),
+	document.getElementById("sim_plot2_bar13"),
+	document.getElementById("sim_plot2_bar14"),
+	document.getElementById("sim_plot2_bar15"),
+	document.getElementById("sim_plot2_bar16"),
+	document.getElementById("sim_plot2_bar17"),
+	document.getElementById("sim_plot2_bar18"),
+	document.getElementById("sim_plot2_bar19"),
+	document.getElementById("sim_plot2_bar20"),
+	document.getElementById("sim_plot2_bar21"),
+	document.getElementById("sim_plot2_bar22"),
+	document.getElementById("sim_plot2_bar23")];
+
+arrbar3 = [document.getElementById("sim_plot3_bar0"),
+	document.getElementById("sim_plot3_bar1"),
+	document.getElementById("sim_plot3_bar2"),
+	document.getElementById("sim_plot3_bar3"),
+	document.getElementById("sim_plot3_bar4"),
+	document.getElementById("sim_plot3_bar5"),
+	document.getElementById("sim_plot3_bar6"),
+	document.getElementById("sim_plot3_bar7"),
+	document.getElementById("sim_plot3_bar8"),
+	document.getElementById("sim_plot3_bar9"),
+	document.getElementById("sim_plot3_bar10"),
+	document.getElementById("sim_plot3_bar11"),
+	document.getElementById("sim_plot3_bar12"),
+	document.getElementById("sim_plot3_bar13"),
+	document.getElementById("sim_plot3_bar14"),
+	document.getElementById("sim_plot3_bar15"),
+	document.getElementById("sim_plot3_bar16"),
+	document.getElementById("sim_plot3_bar17"),
+	document.getElementById("sim_plot3_bar18"),
+	document.getElementById("sim_plot3_bar19"),
+	document.getElementById("sim_plot3_bar20"),
+	document.getElementById("sim_plot3_bar21"),
+	document.getElementById("sim_plot3_bar22"),
+	document.getElementById("sim_plot3_bar23")];
+barmax0 = barmin0 = barmax1 = barmin1 = barmax2 = barmin2 = barmax3 = barmin3 = 0;
+arrmax0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmin0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmax1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmin1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmax2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmin2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmax3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+arrmin3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+
+const regname_label0 = document.getElementById("regname_label0");
+const regname_label1 = document.getElementById("regname_label1");
+const regname_label2 = document.getElementById("regname_label2");
+const regname_label3 = document.getElementById("regname_label3");
+
+const sim_knob0 = document.getElementById("sim_knob0");
+const sim_knob0_label = document.getElementById("sim_knob0_label");
+const sim_knob0_rot = document.getElementById("sim_knob0_rot");
+const sim_knob_outline_circle0 = document.getElementById("sim_knob_outline_circle0");
+
+const sim_knob1 = document.getElementById("sim_knob1");
+const sim_knob1_label = document.getElementById("sim_knob1_label");
+const sim_knob1_rot = document.getElementById("sim_knob1_rot");
+const sim_knob_outline_circle1 = document.getElementById("sim_knob_outline_circle1");
+
+const sim_knob2 = document.getElementById("sim_knob2");
+const sim_knob2_label = document.getElementById("sim_knob2_label");
+const sim_knob2_rot = document.getElementById("sim_knob2_rot");
+const sim_knob_outline_circle2 = document.getElementById("sim_knob_outline_circle2");
+
+const sim_knob3 = document.getElementById("sim_knob3");
+const sim_knob3_label = document.getElementById("sim_knob3_label");
+const sim_knob3_rot = document.getElementById("sim_knob3_rot");
+const sim_knob_outline_circle3 = document.getElementById("sim_knob_outline_circle3");
+const sim_knob_box3 = document.getElementById("sim_knob_box3");
+const sim_knob_name3 = document.getElementById("sim_knob_name3");
+
+const sys_sim = document.getElementById("sys_sim");
+const sys_runbutton = document.getElementById("sys_runbutton");
+
+const editor = document.getElementById("editor");
+const edit_font = document.getElementById("edit_font");
+const edit_area = document.getElementById("edit_area");
+const edit_area_right = document.getElementById("edit_area_right");
+const ce_lines = document.getElementById("ce_lines");
+const codeeditor = document.getElementById("codeeditor");
+const ce_overlay = document.getElementById("ce_overlay");
+const ce_overlay2 = document.getElementById("ce_overlay2");
+const ce_tool_lp = document.getElementById("ce_tool_lp");
+const ce_tool_lm = document.getElementById("ce_tool_lm");
+const ce_tool_sp = document.getElementById("ce_tool_sp");
+const ce_tool_sm = document.getElementById("ce_tool_sm");
+const ce_tool_sz = document.getElementById("ce_tool_sz");
+const message = document.getElementById("message");
+const insts_label = document.getElementById("insts_label");
+
+const filename_label = document.getElementById("filename_label");
+const t_file = document.getElementById("t_file");
+const t_f = document.getElementById("t_f");
+const t_f_open = document.getElementById("t_f_open");
+const t_f_save = document.getElementById("t_f_save");
+const t_f_saveas = document.getElementById("t_f_saveas");
+const t_f_close = document.getElementById("t_f_close");
+const loader = document.getElementById("loader");
+
+const t_view = document.getElementById("t_view");
+const t_v = document.getElementById("t_v");
+const t_v_s3 = document.getElementById("t_v_s3");
+const t_v_s3_c = document.getElementById("t_v_s3_c");
+const t_v_s7 = document.getElementById("t_v_s7");
+const t_v_s7_c = document.getElementById("t_v_s7_c");
+const t_v_s1 = document.getElementById("t_v_s1");
+const t_v_s1_c = document.getElementById("t_v_s1_c");
+const t_v_font = document.getElementById("t_v_font");
+const t_v_font_c = document.getElementById("t_v_font_c");
+const t_v_dark = document.getElementById("t_v_dark");
+const t_v_dark_c = document.getElementById("t_v_dark_c");
+const t_v_reset = document.getElementById("t_v_reset");
+
+const t_t_rs = document.getElementById("t_t_rs");
+const t_t_rs_c= document.getElementById("t_t_rs_c");
+
+filename = "";
+edited = "";
+
+show_t_f = false;
+show_t_v = false;
+show_t_t = false;
+running = false;
+warning = false;
+
+function sendMessage(m, w = "") {
+	message.innerText = m;
+	if (w != "") {
+		message.style = "color: #FF0000;"
+	} else {
+		message.style = ""
+	}
+};
+
+function getLabelValue(received) {
+	if (Number(received) + Number(decibelMin) == 0 ) {
+		return ("-inf");
+	} else {
+		return (received);
+	}
+};
+
+function setPlotBar(max0, min0, max1, min1, max2, min2, max3, min3) {
+	max0 = Number(max0) * 100;
+	min0 = Number(min0) * 100;
+	arrmax0.pop()
+	arrmax0.unshift(max0);
+	arrmin0.pop()
+	arrmin0.unshift(min0);
+	for (let i = 0; i < arrbar0.length; i++) {
+		arrbar0[i].style = "top:" + (100 - arrmax0[i]) + "%;height:" + (arrmax0[i] - arrmin0[i]) + "%;";
+	}
+
+	max1 = Number(max1) * 100;
+	min1 = Number(min1) * 100;
+	arrmax1.pop()
+	arrmax1.unshift(max1);
+	arrmin1.pop()
+	arrmin1.unshift(min1);
+	for (let i = 0; i < arrbar1.length; i++) {
+		arrbar1[i].style = "top:" + (100 - arrmax1[i]) + "%;height:" + (arrmax1[i] - arrmin1[i]) + "%;";
+	}
+
+	max2 = Number(max2) * 100;
+	min2 = Number(min2) * 100;
+	arrmax2.pop()
+	arrmax2.unshift(max2);
+	arrmin2.pop()
+	arrmin2.unshift(min2);
+	for (let i = 0; i < arrbar0.length; i++) {
+		arrbar2[i].style = "top:" + (100 - arrmax2[i]) + "%;height:" + (arrmax2[i] - arrmin2[i]) + "%;";
+	}
+
+	max3 = Number(max3) * 100;
+	min3 = Number(min3) * 100;
+	arrmax3.pop()
+	arrmax3.unshift(max3);
+	arrmin3.pop()
+	arrmin3.unshift(min3);
+	for (let i = 0; i < arrbar3.length; i++) {
+		arrbar3[i].style = "top:" + (100 - arrmax3[i]) + "%;height:" + (arrmax3[i] - arrmin3[i]) + "%;";
+	}
+};
+
+function setOverlay(txt) {
+	arrlines = txt.split("\n");
+	txt = "";
+
+	for (let i = 0; i < arrlines.length; i++) {
+		arrtemp = arrlines[i].split(";");
+		if (arrtemp[0].toUpperCase().substring(0, 3) == "MEM") {
+			txt += "<span class='ce_mem'>" + arrtemp[0];
+		} else if (arrtemp[0].toUpperCase().substring(0, 3) == "EQU") {
+			txt += "<span class='ce_equ'>" + arrtemp[0];
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 4) == "LDAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "MULX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
+				"<span class='ce_reg'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""));
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 4) == "RDAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "WRAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "RDFX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "WRHX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "WRLX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			 arrtemp[0].toUpperCase().substring(0, 4) == "MAXX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
+				"<span class='ce_reg'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 4) == "WRAP" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
+				"<span class='ce_mem'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
+		}
+		else if (arrtemp[0].toUpperCase().substring(0, 3) == "RDA" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+				arrtemp[0].toUpperCase().substring(0, 3) == "WRA" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(3).split(",")[0].replace(/\s+/, ""),
+				"<span class='ce_mem'>" + arrtemp[0].substring(3).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 3) == "CHO" && arrtemp[0].toUpperCase().indexOf("RDA") != -1 &&
+			arrtemp[0].toUpperCase().indexOf("RDAL") == -1 ) {
+			txt += arrtemp[0].split(",")[0] + "," + arrtemp[0].split(",")[1] +
+				",<span class='ce_flag'>" + arrtemp[0].split(",")[2] + "</span>" + 
+				",<span class='ce_mem'>" + arrtemp[0].split(",")[3];
+		}
+		else if (arrtemp[0].toUpperCase().substring(0, 3) == "CHO" && arrtemp[0].toUpperCase().indexOf("SOF") != -1) {
+			txt += arrtemp[0].split(",")[0] + "," + arrtemp[0].split(",")[1] +
+				",<span class='ce_flag'>" + arrtemp[0].split(",")[2] + "</span>" + 
+				arrtemp[0].split(",")[3] + "<span>";
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 3) == "SKP") {
+			txt += arrtemp[0].split(",")[0].toUpperCase()
+				.replace("NEG", "<span class='ce_flag'>NEG</span>")
+				.replace("GEZ", "<span class='ce_flag'>GEZ</span>")
+				.replace("ZRO", "<span class='ce_flag'>ZRO</span>")
+				.replace("ZRC", "<span class='ce_flag'>ZRC</span>")
+				.replace("RUN", "<span class='ce_flag'>RUN</span>") + 
+				",<span class='ce_label'>" + arrtemp[0].split(",")[1];
+		}
+		else if (arrtemp[0].charAt(arrlines[i].length - 1) == ":") {
+			txt += "<span class='ce_label'>" + arrtemp[0];
+		}
+
+		else {
+			txt += arrtemp[0];
+		}
+
+		for (let j = 1; j < arrtemp.length; j++) {
+			txt += "</span>" + "<span class='ce_comment'>" + "_" + arrtemp[j];
+		}
+		txt += "</span><br>";
+	}
+	ce_overlay.innerHTML = txt;
+};
+
+warning_space = "WARNING! don't put any white spaces before the inst [lines : ";
+const instToLine = [];
+function getLines(txt) {
+	arrlines = txt.split("\n");
+	arrlinenum = "";
+	const arrnormlines = [];
+	warning = false;
+
+	j = 0;
+	k = 0;
+	for (let i = 0; i < arrlines.length; i++) {
+		arrlinenum = arrlinenum + (i + 1) + "\n";
+
+		arrlines[i] = arrlines[i].replace(/\s+/g, ' ')
+		.replaceAll(" |", '|').replaceAll("| ", '|')
+		.replaceAll(" ,", ',').replaceAll(", ", ',')
+		.replace(" ;", ';').toUpperCase();
+
+		//remove comment
+		if (arrlines[i].indexOf(";") != -1) {
+			arrlines[i] = arrlines[i].substring(0, arrlines[i].indexOf(";"));
+		}
+
+		//remove empty line
+		if (arrlines[i].charAt(0) != "" && arrlines[i] != " ") {
+			if (arrlines[i].charAt(0) == " ") {
+				sendMessage(warning_space + (i + 1) + "]", "w");
+				warning = true;
+			}
+			temp = arrlines[i].trim();
+			arrnormlines[j] = temp;
+
+			if (temp.substring(0, 4) != "MEM " && temp.substring(0, 4) != "EQU " && temp.charAt(arrlines[i].length - 1) != ":") {
+				instToLine[k] = i + 1;
+				k++;
+			}
+			j++;
+		}
+	}
+	ce_lines.innerText = arrlinenum + "\n\n";
+
+	if (warning == false && message.innerText.indexOf(warning_space) != -1) {
+		sendMessage("");
+	}
+	return(arrnormlines);
+};
+
+function getInstructions(arrlines) {
+	const arrinsts = [];
+	arrtemp = [];
+	memequ_w = [];
+	memequ_v = [];
+	memequ_w[0] = "";
+	memequ_v[0] = 0;
+	regequ_w = [];
+	regequ_v = [];
+	conequ_w = [];
+	conequ_v = [];
+	skpequ_w = [];
+	skpequ_v = [];
+
+	j = 0;
+	k = 1;
+	l = 0;
+	m = 0;
+	n = 0;
+	for (let i = 0; i < arrlines.length; i++) {
+		if (arrlines[i].substring(0, 4) == "MEM ") {
+			arrtemp = arrlines[i].substring(4).split(" ");
+			memequ_w[k] = arrtemp[0];
+			memequ_v[k] = Number(arrtemp[1]) + Number(memequ_v[k - 1] + 1);
+			k++
+
+		} else if (arrlines[i].substring(0, 4) == "EQU ") {
+			if (arrlines[i].indexOf("REG") != -1) {
+				arrtemp = arrlines[i].substring(4).split(" ");
+				regequ_w[l] = arrtemp[0];
+				regequ_v[l] = arrtemp[1];
+				l++
+			} else {
+				arrtemp = arrlines[i].substring(4).split(" ");
+				conequ_w[m] = arrtemp[0];
+				conequ_v[m] = arrtemp[1];
+				m++
+			}
+
+		} else if (arrlines[i].charAt(arrlines[i].length - 1) == ":") {
+			if (j > 0) {
+				skpequ_w[n] = arrlines[i].substring(0, arrlines[i].length - 1);
+				skpequ_v[n] = j - 1;
+				n++
+			}
+
+		} else {
+			arrinsts[j] = arrlines[i];
+			j++;
+		}
+	}
+
+	insts_label.innerText = arrinsts.length;
+	if (memequ_v.length > 1) {
+		mem_label.innerText = (Number(memequ_v[memequ_v.length - 1]) - 1);
+	} else {
+		mem_label.innerText = 0;
+	}
+	return(arrinsts);
+};
+
+function replaceMemEqu(arrinsts) {
+	arrtemp = [];
+	for (let i = 0; i < arrinsts.length; i++) {
+		arrtemp = arrinsts[i].split(" ");
+
+		if (arrtemp.length > 1) {
+			arrtemp[1] = " " + arrtemp[1].replaceAll(",", " ") + " ";
+			for (let j = 1; j < memequ_w.length; j++) {
+				arrtemp[1] = arrtemp[1].replaceAll(" " + memequ_w[j] + "# ", " " + (Number(memequ_v[j]) - 1) + " ")
+					.replaceAll(" " + memequ_w[j] + "^ ", " " + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + " ")
+					.replaceAll(" " + memequ_w[j] + " ", " " + Number(memequ_v[j - 1]) + " ")
+
+					.replaceAll("+" + memequ_w[j] + "# ", "+" + (Number(memequ_v[j]) - 1) + " ")
+					.replaceAll("+" + memequ_w[j] + "^ ", "+" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + " ")
+					.replaceAll("+" + memequ_w[j] + " ", "+" + Number(memequ_v[j - 1]) + " ")
+					.replaceAll("-" + memequ_w[j] + "# ", "-" + (Number(memequ_v[j]) - 1) + " ")
+					.replaceAll("-" + memequ_w[j] + "^ ", "-" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + " ")
+					.replaceAll("-" + memequ_w[j] + " ", "-" + Number(memequ_v[j - 1]) + " ")
+
+					.replaceAll(" " + memequ_w[j] + "#+", " " + (Number(memequ_v[j]) - 1) + "+")
+					.replaceAll(" " + memequ_w[j] + "^+", " " + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "+")
+					.replaceAll(" " + memequ_w[j] + "+", " " + Number(memequ_v[j - 1]) + "+")
+					.replaceAll(" " + memequ_w[j] + "#-", " " + (Number(memequ_v[j]) - 1) + "-")
+					.replaceAll(" " + memequ_w[j] + "^-", " " + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "-")
+					.replaceAll(" " + memequ_w[j] + "-", " " + Number(memequ_v[j - 1]) + "-")
+
+					.replaceAll("+" + memequ_w[j] + "#+", "+" + (Number(memequ_v[j]) - 1) + "+")
+					.replaceAll("+" + memequ_w[j] + "^+", "+" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "+")
+					.replaceAll("+" + memequ_w[j] + "+", "+" + Number(memequ_v[j - 1]) + "+")
+					.replaceAll("+" + memequ_w[j] + "#-", "+" + (Number(memequ_v[j]) - 1) + "-")
+					.replaceAll("+" + memequ_w[j] + "^-", "+" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "-")
+					.replaceAll("+" + memequ_w[j] + "-", "+" + Number(memequ_v[j - 1]) + "-")
+
+					.replaceAll("-" + memequ_w[j] + "#+", "-" + (Number(memequ_v[j]) - 1) + "+")
+					.replaceAll("-" + memequ_w[j] + "^+", "-" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "+")
+					.replaceAll("-" + memequ_w[j] + "+", "-" + Number(memequ_v[j - 1]) + "+")
+					.replaceAll("-" + memequ_w[j] + "#-", "-" + (Number(memequ_v[j]) - 1) + "-")
+					.replaceAll("-" + memequ_w[j] + "^-", "-" + Math.floor((Number(memequ_v[j]) + Number(memequ_v[j - 1])) / 2) + "-")
+					.replaceAll("-" + memequ_w[j] + "-", "-" + Number(memequ_v[j - 1]) + "-");
+			}
+
+			for (let j = 0; j < regequ_w.length; j++) {
+				arrtemp[1] = arrtemp[1].replaceAll(" " + regequ_w[j] + " ", " " + regequ_v[j] + " ");
+			}
+
+			for (let j = 0; j < conequ_w.length; j++) {
+				arrtemp[1] = arrtemp[1].replaceAll(" " + conequ_w[j] + " ", " " + conequ_v[j] + " ")
+
+					.replaceAll("+" + conequ_w[j] + " ", "+" + conequ_v[j] + " ")
+					.replaceAll("-" + conequ_w[j] + " ", "-" + conequ_v[j] + " ")
+
+					.replaceAll(" " + conequ_w[j] + "+", " " + conequ_v[j] + "+")
+					.replaceAll(" " + conequ_w[j] + "-", " " + conequ_v[j] + "-")
+
+					.replaceAll("+" + conequ_w[j] + "+", "+" + conequ_v[j] + "+")
+					.replaceAll("+" + conequ_w[j] + "-", "+" + conequ_v[j] + "-")
+
+					.replaceAll("-" + conequ_w[j] + "+", "-" + conequ_v[j] + "+")
+					.replaceAll("-" + conequ_w[j] + "-", "-" + conequ_v[j] + "-");
+			}
+
+			if (arrinsts[i].substring(0, 4) == "SKP ") {
+				for (let j = 0; j < skpequ_w.length; j++) {
+					arrtemp[1] = arrtemp[1].replaceAll(" " + skpequ_w[j] + " ", " " + (Number(skpequ_v[j]) - i) + " ");
+				}
+			}
+			arrinsts[i] = arrtemp[0] + arrtemp[1].trimEnd();
+		}
+	}
+
+	return(arrinsts);
+};
+
+max = 8388608;
+
+const opcodename = [];
+opcodename[0] = "NOP";
+opcodename[1] = "CLR";
+opcodename[2] = "LDAX";
+opcodename[3] = "RDAX";
+opcodename[4] = "WRAX";
+opcodename[5] = "RDFX";
+opcodename[6] = "WRHX";
+opcodename[7] = "WRLX";
+opcodename[8] = "MAXX";
+opcodename[9] = "MULX";
+opcodename[10] = "SOF";
+opcodename[11] = "LOG";
+opcodename[12] = "EXP";
+opcodename[13] = "ABSA";
+opcodename[14] = "AND";
+opcodename[15] = "OR";
+opcodename[16] = "XOR";
+opcodename[17] = "NOT";
+opcodename[18] = "SKP";
+opcodename[19] = "RDA";
+opcodename[20] = "WRA";
+opcodename[21] = "RMPA";
+opcodename[22] = "WRAP";
+opcodename[23] = "WLDS SIN0";
+opcodename[24] = "WLDS SIN1";
+opcodename[25] = "WLDR RMP0";
+opcodename[26] = "WLDR RMP1";
+opcodename[27] = "JAM";	
+opcodename[28] = "CHO RDAL";
+opcodename[29] = "CHO SOF";
+opcodename[30] = "CHO RDA";
+opcodename[31] = "WLDS 0";
+opcodename[32] = "WLDS 1";
+opcodename[33] = "WLDR 0";
+opcodename[34] = "WLDR 1";
+hitop = false;
+
+const regname = [];
+for (let i = 0; i < 32; i++) {
+	regname[i] = "REG" + i;
+}
+regname[32] = "ADCL";
+regname[33] = "ADCR";
+regname[34] = "DACL";
+regname[35] = "DACR";
+regname[36] = "POT0";
+regname[37] = "POT1";
+regname[38] = "POT2";
+regname[39] = "SIN0_RATE";
+regname[40] = "SIN0_RANGE";
+regname[41] = "SIN1_RATE";
+regname[42] = "SIN1_RANGE";
+regname[43] = "RMP0_RATE";
+regname[44] = "RMP0_RANGE";
+regname[45] = "RMP1_RATE";
+regname[46] = "RMP1_RANGE";
+regname[47] = "ADDR_PTR";
+//regname[48] = "ACC";
+//regname[49] = "LR";
+
+const condname = [];
+condname[0] = "NEG";
+condname[1] = "GEZ";
+condname[2] = "ZRO";
+condname[3] = "ZRC";
+condname[4] = "RUN";
+
+const choflagname = [];
+choflagname[0] = "SIN";
+choflagname[1] = "COS";
+choflagname[2] = "REG";
+choflagname[3] = "COMPC";
+choflagname[4] = "COMPA";
+choflagname[5] = "RPTR2";
+choflagname[6] = "NA";
+choflag = [0,0,0,0,0,0,0];
+choflags = "";
+
+arrop = [0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+	0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0];
+
+function calcMem(mem) {
+	if (mem.indexOf("+") != -1) {
+		mem = Number(mem.split("+")[0]) + Number(mem.split("+")[1]);
+	} else if (mem.indexOf("-") != -1) {
+		mem = Number(mem.split("-")[0]) - Number(mem.split("-")[1]);
+	}
+	return(mem);
+}
+
+function calcConst(cst) {
+	if (cst.indexOf("+") != -1) {
+		cst = Number(cst.split("+")[0]) + Number(cst.split("+")[1]);
+	} else if (cst.indexOf("-") != -1) {
+		cst = Number(cst.split("-")[0]) - Number(cst.split("-")[1]);
+	}
+	return(cst);
+}
+
+function getOpCode(arrinsts) {
+	arrop = [0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,
+		0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  0,0,0, 0,0,0, 0,0,0, 0,0,0];
+
+	arrtemp = [];
+	negmem = false;
+	ovrmem = false;
+	l = 0;
+	for (let i = 0; i < arrinsts.length; i++) {
+		for (let j = 0; j < opcodename.length; j++) {
+			find = -1;
+			arrinsts[i] = arrinsts[i] + " "
+			if (arrinsts[i].substring(0, opcodename[j].length + 1) == opcodename[j] + " ") {
+				find = arrinsts[i].indexOf(opcodename[j]);
+				if (j < 31) {
+					arrinsts[i] = arrinsts[i].replace(opcodename[j], j);
+				} else {
+					arrinsts[i] = arrinsts[i].replace(opcodename[j], j - 8);
+				}
+			}
+
+			arrtemp = arrinsts[i].trim().split(" ");
+
+			if (arrtemp.length == 1) {
+				arrtemp[1] = "0";
+				arrtemp[2] = "0";
+			} else if (arrtemp.length == 2) {
+				arrtemp[2] = "0";
+			}
+
+			if (find != -1 && negmem == false && ovrmem == false) {
+				
+				if (2 <= j && j <= 9) {
+					for (let k = 0; k < regname.length; k++) {
+						arrtemp[1] = arrtemp[1].replace(regname[k], k);
+					}
+					if (3 <= j && j <= 8) {
+						arrtemp[2] = Math.floor(calcConst(arrtemp[2]) * max);
+					}
+
+				} else if (10 <= j && j <= 12) {
+					arrtemp[1] = Math.floor(calcConst(arrtemp[1]) * max);
+					arrtemp[2] = Math.floor(calcConst(arrtemp[2]) * max);
+
+				} else if (14 <= j && j <= 16) {
+					if (arrtemp[1].indexOf("%1") == -1) {
+						arrtemp[1] = parseInt(arrtemp[1].replace("%", "").replaceAll("_", ""), 2);
+					} else {
+						arrtemp[1] = -1 * parseInt(arrtemp[1].replace("%", "").replaceAll("_", "")
+							.replaceAll("0", "z")
+							.replaceAll("1", "0")
+							.replaceAll("z", "1"), 2) - 1;
+					}
+
+				} else if (j == 18) {
+					for (let k = 0; k < condname.length; k++) {
+						arrtemp[1] = arrtemp[1].replace(condname[k], k);
+					}
+
+				} else if (19 <= j && j <= 22) {
+					if (j == 21) {
+						arrtemp[1] = Math.floor(calcConst(arrtemp[1]) * max);
+					} else {
+						arrtemp[1] = Math.floor(calcMem(arrtemp[1]));
+						if (arrtemp[1] < 0) {negmem = true;} else if (arrtemp[1] > 32767) {ovrmem = true;}
+						arrtemp[2] = Math.floor(calcConst(arrtemp[2]) * max);
+					}
+
+				} else if (27 <= j && j <= 30) {
+					arrtemp[1] = arrtemp[1]
+						.replace("SIN0", "0").replace("SIN1", "1")
+						.replace("COS0", "8").replace("COS1", "9")
+						.replace("RMP0", "2").replace("RMP1", "3");
+
+					if (29 <= j) {
+						if (arrtemp[2].indexOf("%") != -1) {
+							arrtemp[2] = parseInt(arrtemp[2].replace("%", ""), 2);
+						} else {
+							choflags = "";
+							choflag = [0,0,0,0,0,0,0];
+							for (let k = choflag.length - 1; k > 0; k--) {
+								if (arrinsts[i].indexOf(choflagname[k]) != -1) {
+									choflags = choflags + "1";
+								} else {
+									choflags = choflags + "0";
+								}
+								arrinsts[i] = arrinsts[i].replace(choflagname[k], "|");
+							}
+							arrtemp[2] = parseInt(choflags, 2);
+						}
+
+						if (29 == j) {
+							arrtemp[3] = Math.floor(arrtemp[3] * max);
+						} else {
+							arrtemp[3] = Math.floor(calcMem(arrtemp[3]));
+							if (arrtemp[3] < 0) {negmem = true;} else if (arrtemp[3] > 32767) {ovrmem = true;}
+						}
+
+						arrtemp[1] = arrtemp[2] + arrtemp[1];
+						arrtemp[2] = arrtemp[3];
+					}
+				}
+
+				arrinsts[i] = arrtemp[0] + " " + arrtemp[1] + " " + arrtemp[2];
+			}
+		}
+		arrinsts[i] = arrinsts[i].trim();
+		if (ovrmem == true) {
+			//sendMessage("WARNING! too large address (" + insts[i] + " || " + arrinsts[i] + ") at lines : " + instToLine[i], "w");
+			sendMessage("WARNING! too large address (" + insts[i] + ") [lines : " + instToLine[i] + "]", "w");
+			return("w");
+		} else if (negmem == true) {
+			//sendMessage("WARNING! negative address (" + insts[i] + " || " + arrinsts[i] + ")", "w");
+			sendMessage("WARNING! negative address (" + insts[i] + ") [lines : " + instToLine[i] + "]", "w");
+			return("w");
+		} else if (arrinsts[i].match(/[^0-9.-\s]/) != null) {
+			//sendMessage("WARNING! invalid inst (" + insts[i] + " || " + arrinsts[i] + ")", "w");
+			sendMessage("WARNING! invalid inst (" + insts[i] + ") [lines : " + instToLine[i] + "]", "w");
+			return("w");
+		}
+		arrop[l] = Math.floor(arrinsts[i].split(" ")[0]);
+		l++;
+		arrop[l] = Math.floor(arrinsts[i].split(" ")[1]);
+		l++;
+		arrop[l] = Math.floor(arrinsts[i].split(" ")[2]);
+		l++;
+	}
+	return(arrop);
+};
+
+function run() {
+	if (running == false) {
+		lines = getLines(codeeditor.value);
+		insts = getInstructions(lines);
+		opcodes = getOpCode(replaceMemEqu(insts.slice()));
+
+		//insts = replaceMemEqu(getInstructions(getLines(codeeditor.value)));
+		if (opcodes != "w") {
+			if (insts != 0) {
+				running = true;
+				sys_runbutton.innerText = "STOP";
+				sys_sim.style = "opacity: 100%;";
+
+				/*sendMessage('running! first inst is "' + insts[0] + ' | ' + 
+					opcodes[0] + " " + 
+					opcodes[1] + " " + 
+					opcodes[2] + '"');*/
+				sendMessage("running!");
+
+				const jsonData = Object.fromEntries(opcodes.map((value, index) =>
+					['op' + (Math.floor(index / 3) / 1000).toFixed(3).toString().substring(2) + "_" + (index % 3), value]));
+				onOpChanged(jsonData);
+				onCalled({callName:"running", callArg:2});
+			} else {
+				sendMessage("code is empty!");
+			}
+		}
+	} else {
+		running = false;
+		sys_runbutton.innerText = "COMPILE / RUN";
+		sys_sim.style = "opacity: 33%;";
+		sendMessage("ready");
+
+		barmax0 = barmin0 = barmax1 = barmin1 = barmax2 = barmin2 = barmax3 = barmin3 = 0;
+		arrmax0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmin0 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmax1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmin1 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmax2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmin2 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmax3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+		arrmin3 = [50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50, 50,50,50,50,50,50,50,50];
+
+		setPlotBar(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+		onCalled({callName:"running", callArg:0});
+	}
+}
+sys_ingain.addEventListener("dblclick", function() {
+	sys_ingain.value = decibelMin;
+	sys_ingainLabel.innerText = getLabelValue((sys_ingain.value - decibelMin).toFixed(1));
+	onSliderChanged({sliderName:"sys_ingain", sliderValue:sys_ingain.value});
+});
+sys_ingain.addEventListener("input", function() {
+	sys_ingainLabel.innerText = getLabelValue((sys_ingain.value - decibelMin).toFixed(1));
+	onSliderChanged({sliderName:"sys_ingain", sliderValue:sys_ingain.value});
+});
+sys_outgain.addEventListener("dblclick", function() {
+	sys_outgain.value = decibelMin;
+	sys_outgainLabel.innerText = getLabelValue((sys_outgain.value - decibelMin).toFixed(1));
+	onSliderChanged({sliderName:"sys_outgain", sliderValue:sys_outgain.value});
+});
+sys_outgain.addEventListener("input", function () {
+	sys_outgainLabel.innerText = getLabelValue((sys_outgain.value - decibelMin).toFixed(1));
+	onSliderChanged({sliderName:"sys_outgain", sliderValue:sys_outgain.value});
+});
+
+knob0value = knob1value = knob2value = knob3value = 0;
+dragging = false;
+function calcKnobValue(t, v, m) {
+	t.draggable = false;
+	v = (v + m / -200);
+	if (v > 1) {
+		v = 1.0;
+	} else if (v < 0.0) {
+		v = 0.0;
+	}
+	if (t == sim_knob0) {
+		knob0value = v;
+		sim_knob0_rot.style = "transform:rotate(" + ((v.toFixed(3) * 300) -150) + "deg);";
+		if (v == 1) {
+			sim_knob0_label.innerText = ".999";
+			onSliderChanged({sliderName:"pot0_ctrl", sliderValue:0.999});
+		} else {
+			sim_knob0_label.innerText = (v.toFixed(3) + "").substring(1);
+			onSliderChanged({sliderName:"pot0_ctrl", sliderValue:v});
+		}
+	} else if (t == sim_knob1) {
+		knob1value = v;
+		sim_knob1_rot.style = "transform:rotate(" + ((v.toFixed(3) * 300) -150) + "deg);";
+		if (v == 1) {
+			sim_knob1_label.innerText = ".999";
+			onSliderChanged({sliderName:"pot1_ctrl", sliderValue:0.999});
+		} else {
+			sim_knob1_label.innerText = (v.toFixed(3) + "").substring(1);
+			onSliderChanged({sliderName:"pot1_ctrl", sliderValue:v});
+		}
+	} else if (t == sim_knob2) {
+		knob2value = v;
+		sim_knob2_rot.style = "transform:rotate(" + ((v.toFixed(3) * 300) -150) + "deg);";
+		if (v == 1) {
+			sim_knob2_label.innerText = ".999";
+			onSliderChanged({sliderName:"pot2_ctrl", sliderValue:0.999});
+		} else {
+			sim_knob2_label.innerText = (v.toFixed(3) + "").substring(1);
+			onSliderChanged({sliderName:"pot2_ctrl", sliderValue:v});
+		}
+	} else if (t == sim_knob3) {
+		knob3value = v;
+		sim_knob3_rot.style = "transform:rotate(" + ((v.toFixed(3) * 300) -150) + "deg);";
+		if (v == 1) {
+			sim_knob3_label.innerText = ".999";
+			onSliderChanged({sliderName:"pot3_ctrl", sliderValue:0.999});
+		} else {
+			sim_knob3_label.innerText = (v.toFixed(3) + "").substring(1);
+			onSliderChanged({sliderName:"pot3_ctrl", sliderValue:v});
+		}
+	}
+}
+function knob0reset() {
+	dragging = false;
+	knob0value = 0;
+	sim_knob0_label.innerText = ".000";
+	sim_knob0_rot.style = "transition:transform 0.25s;";
+	onSliderChanged({sliderName:"pot0_ctrl", sliderValue:0});
+}
+function knob1reset() {
+	dragging = false;
+	knob1value = 0;
+	sim_knob1_label.innerText = ".000";
+	sim_knob1_rot.style = "transition:transform 0.25s;";
+	onSliderChanged({sliderName:"pot1_ctrl", sliderValue:0});
+}
+function knob2reset() {
+	dragging = false;
+	knob2value = 0;
+	sim_knob2_label.innerText = ".000";
+	sim_knob2_rot.style = "transition:transform 0.25s;";
+	onSliderChanged({sliderName:"pot2_ctrl", sliderValue:0});
+}
+function knob3reset() {
+	dragging = false;
+	knob3value = 0;
+	sim_knob3_label.innerText = ".000";
+	sim_knob3_rot.style = "transition:transform 0.25s;";
+	onSliderChanged({sliderName:"pot3_ctrl", sliderValue:0});
+}
+sim_knob0.addEventListener("dblclick", function (e) {knob0reset()});
+sim_knob0.addEventListener("mousedown", function (e) {sim_knob0_rot.style.transition = "transform 0.0s;";});
+sim_knob0.addEventListener("mouseup", function (e) {dragging = false;});
+sim_knob0.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcKnobValue(this, knob0value, e.movementY);}
+	else {dragging = false;}
+});
+sim_knob1.addEventListener("dblclick", function (e) {knob1reset()});
+sim_knob1.addEventListener("mousedown", function (e) {sim_knob1_rot.style.transition = "transform 0.0s;";});
+sim_knob1.addEventListener("mouseup", function (e) {dragging = false;});
+sim_knob1.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcKnobValue(this, knob1value, e.movementY);}
+	else {dragging = false;}
+});
+sim_knob2.addEventListener("dblclick", function (e) {knob2reset()});
+sim_knob2.addEventListener("mousedown", function (e) {sim_knob2_rot.style.transition = "transform 0.0s;";});
+sim_knob2.addEventListener("mouseup", function (e) {dragging = false;});
+sim_knob2.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcKnobValue(this, knob2value, e.movementY);}
+	else {dragging = false;}
+});
+sim_knob3.addEventListener("dblclick", function (e) {knob3reset()});
+sim_knob3.addEventListener("mousedown", function (e) {sim_knob3_rot.style.transition = "transform 0.0s;";});
+sim_knob3.addEventListener("mouseup", function (e) {dragging = false;});
+sim_knob3.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcKnobValue(this, knob3value, e.movementY);}
+	else {dragging = false;}
+});
+
+knob_name = 0;
+function calcKnobName(v, m) {
+	v = (v + m / -10);
+	if (v > 33) {v = 33;} else if (v < 0) {v = 0;}
+	fv = Math.floor(v);
+	knob_name = v;
+	if (fv == 0) {
+		sim_knob_name3.innerText = "NONE";
+		sim_knob_box3.style.opacity = "33%";
+	} else if (fv == 1) {
+		sim_knob_name3.innerText = "DRY";
+		sim_knob_box3.style = "";
+	} else if (fv >= 2) {
+		sim_knob_name3.innerText = regname[fv - 2];
+		sim_knob_box3.style = "";
+	}
+}
+function resetKnobName() {
+	dragging = false;
+	knob_name = 0;
+	sim_knob_name3.innerText = "NONE";
+	sim_knob_box3.style.opacity = "33%";
+}
+sim_knob_name3.addEventListener("dblclick", function (e) {
+	resetKnobName();
+	onSelectChanged({selectName:"knob_name", selectValue:0});
+});
+sim_knob_name3.addEventListener("mouseup", function (e) {dragging = false;});
+sim_knob_name3.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	this.draggable = false;
+	if(e.buttons) {
+		dragging = true;calcKnobName(knob_name, e.movementY);
+		onSelectChanged({selectName:"knob_name", selectValue:fv});
+	} else {
+		dragging = false;
+	}
+});
+resetKnobName();
+
+
+reg_sel0 = 32;
+reg_sel1 = 33;
+reg_sel2 = 34;
+reg_sel3 = 35;
+function calcRegName(t, v, m) {
+	t.draggable = false;
+	v = (v + m / -10);
+	if (v > 47) {v = 47;} else if (v < 0) {v = 0;}
+	fv = Math.floor(v);
+	if (t == regname_label0) {
+		reg_sel0 = v;
+		regname_label0.innerText = regname[fv];
+		onSelectChanged({selectName:"reg_sel0", selectValue:fv});
+	} else if (t == regname_label1) {
+		reg_sel1 = v;
+		regname_label1.innerText = regname[fv];
+		onSelectChanged({selectName:"reg_sel1", selectValue:fv});
+	} else if (t == regname_label2) {
+		reg_sel2 = v;
+		regname_label2.innerText = regname[fv];
+		onSelectChanged({selectName:"reg_sel2", selectValue:fv});
+	} else if (t == regname_label3) {
+		reg_sel3 = v;
+		regname_label3.innerText = regname[fv];
+		onSelectChanged({selectName:"reg_sel3", selectValue:fv});
+	}
+}
+function resetRegName0() {
+	dragging = false;
+	reg_sel0 = 32;
+	regname_label0.innerText = "ADCL";
+}
+function resetRegName1() {
+	dragging = false;
+	reg_sel1 = 33;
+	regname_label1.innerText = "ADCR";
+}
+function resetRegName2() {
+	dragging = false;
+	reg_sel2 = 34;
+	regname_label2.innerText = "DACL";
+}
+function resetRegName3() {
+	dragging = false;
+	reg_sel3 = 35;
+	regname_label3.innerText = "DACR";
+}
+regname_label0.addEventListener("dblclick", function (e) {
+	resetRegName0();
+	onSelectChanged({selectName:"reg_sel0", selectValue:32});
+});
+regname_label0.addEventListener("mouseup", function (e) {dragging = false;});
+regname_label0.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcRegName(this, reg_sel0, e.movementY);}
+	else {dragging = false;}
+});
+regname_label1.addEventListener("dblclick", function (e) {
+	resetRegName1();
+	onSelectChanged({selectName:"reg_sel1", selectValue:33});
+});
+regname_label1.addEventListener("mouseup", function (e) {dragging = false;});
+regname_label1.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcRegName(this, reg_sel1, e.movementY);}
+	else {dragging = false;}
+});
+regname_label2.addEventListener("dblclick", function (e) {
+	resetRegName2();
+	onSelectChanged({selectName:"reg_sel2", selectValue:34});
+});
+regname_label2.addEventListener("mouseup", function (e) {dragging = false;});
+regname_label2.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcRegName(this, reg_sel2, e.movementY);}
+	else {dragging = false;}
+});
+regname_label3.addEventListener("dblclick", function (e) {
+	resetRegName3();
+	onSelectChanged({selectName:"reg_sel3", selectValue:35});
+});
+regname_label3.addEventListener("mouseup", function (e) {dragging = false;});
+regname_label3.addEventListener("pointermove", function (e) {
+	this.setPointerCapture(e.pointerId);
+	if(e.buttons) {dragging = true;calcRegName(this, reg_sel3, e.movementY);}
+	else {dragging = false;}
+});
+resetRegName0();
+resetRegName1();
+resetRegName2();
+resetRegName3();
+
+
+function clearBybass() {
+	bypass = false;
+	body.style.setProperty("--bg-bchk-base", "rgba(0, 0, 0, 0)"); 
+	body.style.setProperty("--bg-bchk-hover", "rgba(0, 0, 0, 0)");
+	body.style.setProperty("--bg-bchk-active", "rgba(0, 0, 0, 0)");
+	if (darkUI == false) {
+		body.style.setProperty("--bdbchk-base", "#767676");
+		body.style.setProperty("--bdbchk-hover", "#8D8D8D");
+		body.style.setProperty("--bdbchk-active", "#4F4F4F");
+	} else {
+		body.style.setProperty("--bdbchk-base", "#A0A0A0");
+		body.style.setProperty("--bdbchk-hover", "#C0C0C0");
+		body.style.setProperty("--bdbchk-active", "#808080");
+	}
+	sys_bypass_inner.style.opacity = "0";
+}
+function setBybass() {
+	bypass = true;
+	if (darkUI == false) {
+		body.style.setProperty("--bg-bchk-base", "#0075FF");
+		body.style.setProperty("--bg-bchk-hover", "#005CC8");
+		body.style.setProperty("--bg-bchk-active", "#3793FF");
+		body.style.setProperty("--bdbchk-base", "#0075FF");
+		body.style.setProperty("--bdbchk-hover", "#005CC8");
+		body.style.setProperty("--bdbchk-active", "#3793FF");
+	} else {
+		body.style.setProperty("--bg-bchk-base", "#2B86CB");
+		body.style.setProperty("--bg-bchk-hover", "#4FA1D2");
+		body.style.setProperty("--bg-bchk-active", "#2B77BB");
+		body.style.setProperty("--bdbchk-base", "#018AF1");
+		body.style.setProperty("--bdbchk-hover", "#2AA5F0");
+		body.style.setProperty("--bdbchk-active", "#0779DF");
+	}
+	sys_bypass_inner.style = "";
+}
+sys_bypass.addEventListener("click", function() {
+	if (bypass == true) {
+		clearBybass();
+		onToggleChanged({toggleName:"sys_bypass", toggleValue:0});
+	} else {
+		setBybass();
+		onToggleChanged({toggleName:"sys_bypass", toggleValue:1});
+	}
+});
+bypass = false;
+
+function clearMute() {
+	mute = false;
+	body.style.setProperty("--bg-mchk-base", "rgba(0, 0, 0, 0)"); 
+	body.style.setProperty("--bg-mchk-hover", "rgba(0, 0, 0, 0)");
+	body.style.setProperty("--bg-mchk-active", "rgba(0, 0, 0, 0)");
+	if (darkUI == false) {
+		body.style.setProperty("--bdmchk-base", "#767676");
+		body.style.setProperty("--bdmchk-hover", "#8D8D8D");
+		body.style.setProperty("--bdmchk-active", "#4F4F4F");
+	} else {
+		body.style.setProperty("--bdmchk-base", "#A0A0A0");
+		body.style.setProperty("--bdmchk-hover", "#C0C0C0");
+		body.style.setProperty("--bdmchk-active", "#808080");
+	}
+	sys_mute_inner.style.opacity = "0";
+}
+function setMute() {
+	mute = true;
+	if (darkUI == false) {
+		body.style.setProperty("--bg-mchk-base", "#0075FF");
+		body.style.setProperty("--bg-mchk-hover", "#005CC8");
+		body.style.setProperty("--bg-mchk-active", "#3793FF");
+		body.style.setProperty("--bdmchk-base", "#0075FF");
+		body.style.setProperty("--bdmchk-hover", "#005CC8");
+		body.style.setProperty("--bdmchk-active", "#3793FF");
+	} else {
+		body.style.setProperty("--bg-mchk-base", "#2B86CB");
+		body.style.setProperty("--bg-mchk-hover", "#4FA1D2");
+		body.style.setProperty("--bg-mchk-active", "#2B77BB");
+		body.style.setProperty("--bdmchk-base", "#018AF1");
+		body.style.setProperty("--bdmchk-hover", "#2AA5F0");
+		body.style.setProperty("--bdmchk-active", "#0779DF");
+	}
+	sys_mute_inner.style = "";
+}
+sys_mute.addEventListener("click", function() {
+	if (mute == true) {
+		clearMute();
+		onToggleChanged({toggleName:"sys_mute", toggleValue:0});
+	} else {
+		setMute();
+		onToggleChanged({toggleName:"sys_mute", toggleValue:1});
+	}
+});
+mute = true;
+
+
+const textareaObserver = new ResizeObserver(resizeOverlay);
+textareaObserver.observe(codeeditor);
+function resizeOverlay(entries) {
+	for (let entry of entries) {
+		ce_overlay.style.height = (entry.contentBoxSize[0].blockSize + 12) + 'px';
+		ce_overlay.style.width = (entry.contentBoxSize[0].inlineSize + 12) + 'px';
+		ce_overlay2.style.height = (entry.contentBoxSize[0].blockSize + 12) + 'px';
+		ce_overlay2.style.width = (entry.contentBoxSize[0].inlineSize + 12) + 'px';
+	}
+}
+codeeditor.addEventListener("keyup", function () {
+	ce_overlay.scrollTop = codeeditor.scrollTop;
+	ce_overlay.scrollLeft = codeeditor.scrollLeft;
+	ce_lines.scrollTop = codeeditor.scrollTop;
+
+	setOverlay(codeeditor.value);
+	filename_label.innerText = filename + edited;
+	getInstructions(getLines(codeeditor.value));
+
+	onTextChanged({textName:"code", textContent:codeeditor.value});
+});
+codeeditor.addEventListener("beforeinput", function () {
+	s = this.selectionStart;
+	if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "m" || codeeditor.value.substring(0, s) == "m" && event.data === "m") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MEM\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "M" || codeeditor.value.substring(0, s) == "m" && event.data === "M") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MEM\tname\t0");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\ne" && event.data === "u" || codeeditor.value.substring(0, s) == "e" && event.data === "u") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "EQU\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ne" && event.data === "U" || codeeditor.value.substring(0, s) == "e" && event.data === "U") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "EQU\tname\tREG");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "r" || codeeditor.value.substring(0, s) == "c" && event.data === "r") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CLR");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "R" || codeeditor.value.substring(0, s) == "c" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CLR\n");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "x" || codeeditor.value.substring(0, s) == "l" && event.data === "x") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "X" || codeeditor.value.substring(0, s) == "l" && event.data === "X") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tREG");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "L" || codeeditor.value.substring(0, s) == "l" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tADCL");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "R" || codeeditor.value.substring(0, s) == "l" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tADCR");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "0" || codeeditor.value.substring(0, s) == "l" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tPOT0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "1" || codeeditor.value.substring(0, s) == "l" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tPOT1");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "2" || codeeditor.value.substring(0, s) == "l" && event.data === "2") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LDAX\tPOT2");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "x" || codeeditor.value.substring(0, s) == "r" && event.data === "x") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "X" || codeeditor.value.substring(0, s) == "r" && event.data === "X") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tREG, 1.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "L" || codeeditor.value.substring(0, s) == "r" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tADCL, 1.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "R" || codeeditor.value.substring(0, s) == "r" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tADCR, 1.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	} else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "C" || codeeditor.value.substring(0, s) == "r" && event.data === "C") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tADCL, 0.5\nRDAX\tADCR, 0.5");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "0" || codeeditor.value.substring(0, s) == "r" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tPOT0, 1.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "1" || codeeditor.value.substring(0, s) == "r" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tPOT1, 1.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "2" || codeeditor.value.substring(0, s) == "r" && event.data === "2") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDAX\tPOT2, 1.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "x" || codeeditor.value.substring(0, s) == "w" && event.data === "x") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "X" || codeeditor.value.substring(0, s) == "w" && event.data === "X") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAX\tREG, 0.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "L" || codeeditor.value.substring(0, s) == "w" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAX\tDACL, 0.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "R" || codeeditor.value.substring(0, s) == "w" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAX\tDACR, 0.0");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "C" || codeeditor.value.substring(0, s) == "w" && event.data === "C") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAX\tDACL, 1.0\nWRAX\tDACR, 0.0");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "x" || codeeditor.value.substring(0, s) == "f" && event.data === "x") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDFX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "X" || codeeditor.value.substring(0, s) == "f" && event.data === "X") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDFX\tREG, 1.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "h" || codeeditor.value.substring(0, s) == "w" && event.data === "h") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRHX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "H" || codeeditor.value.substring(0, s) == "w" && event.data === "H") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRHX\tREG, -1.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "l" || codeeditor.value.substring(0, s) == "w" && event.data === "l") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRLX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "L" || codeeditor.value.substring(0, s) == "w" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRLX\tREG, -1.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "a" || codeeditor.value.substring(0, s) == "m" && event.data === "a") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MAXX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "A" || codeeditor.value.substring(0, s) == "m" && event.data === "A") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MAXX\tREG, 1.0");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "u" || codeeditor.value.substring(0, s) == "m" && event.data === "u") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "U" || codeeditor.value.substring(0, s) == "m" && event.data === "U") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tREG");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "L" || codeeditor.value.substring(0, s) == "m" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tADCL");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "R" || codeeditor.value.substring(0, s) == "m" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tADCR");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "0" || codeeditor.value.substring(0, s) == "m" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tPOT0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "1" || codeeditor.value.substring(0, s) == "m" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tPOT1");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nm" && event.data === "2" || codeeditor.value.substring(0, s) == "m" && event.data === "2") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "MULX\tPOT2");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "f" || codeeditor.value.substring(0, s) == "s" && event.data === "f") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "F" || codeeditor.value.substring(0, s) == "s" && event.data === "F") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t1.0, 0.0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "0" || codeeditor.value.substring(0, s) == "s" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t0.0, 0.0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "5" || codeeditor.value.substring(0, s) == "s" && event.data === "5") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t0.5, 0.5");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "2" || codeeditor.value.substring(0, s) == "s" && event.data === "2") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t-2.0, 0.0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === '"' || codeeditor.value.substring(0, s) == "s" && event.data === '"') {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SOF\t-2.0, 0.0\nSOF\t-2.0, 0.0");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "g" || codeeditor.value.substring(0, s) == "l" && event.data === "g") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LOG\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nl" && event.data === "G" || codeeditor.value.substring(0, s) == "l" && event.data === "G") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "LOG\t1.0, 0.0");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\ne" && event.data === "p" || codeeditor.value.substring(0, s) == "e" && event.data === "p") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "EXP\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ne" && event.data === "P" || codeeditor.value.substring(0, s) == "e" && event.data === "P") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "EXP\t1.0, 0.0");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "a" || codeeditor.value.substring(0, s) == "a" && event.data === "a") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "ABSA");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "A" || codeeditor.value.substring(0, s) == "a" && event.data === "A") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "ABSA\n");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "d" || codeeditor.value.substring(0, s) == "a" && event.data === "d") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "D" || codeeditor.value.substring(0, s) == "a" && event.data === "D") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "0" || codeeditor.value.substring(0, s) == "a" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "1" || codeeditor.value.substring(0, s) == "a" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t%11111111_11111111_11111111");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "r" || codeeditor.value.substring(0, s) == "o" && event.data === "r") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "R" || codeeditor.value.substring(0, s) == "o" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "0" || codeeditor.value.substring(0, s) == "o" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "1" || codeeditor.value.substring(0, s) == "o" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t%11111111_11111111_11111111");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "r" || codeeditor.value.substring(0, s) == "x" && event.data === "r") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "R" || codeeditor.value.substring(0, s) == "x" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "0" || codeeditor.value.substring(0, s) == "x" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t%00000000_00000000_00000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "1" || codeeditor.value.substring(0, s) == "x" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t%11111111_11111111_11111111");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nn" && event.data === "t" || codeeditor.value.substring(0, s) == "n" && event.data === "t") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "NOT");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nn" && event.data === "T" || codeeditor.value.substring(0, s) == "n" && event.data === "T") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "NOT\n");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "p" || codeeditor.value.substring(0, s) == "s" && event.data === "p") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "P" || codeeditor.value.substring(0, s) == "s" && event.data === "P") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tNEG, 1");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 3;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "N" || codeeditor.value.substring(0, s) == "s" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tNEG, 1");
+		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "G" || codeeditor.value.substring(0, s) == "s" && event.data === "5") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tGEZ, 1");
+		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "Z" || codeeditor.value.substring(0, s) == "s" && event.data === "Z") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tZRO, 1");
+		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "C" || codeeditor.value.substring(0, s) == "s" && event.data === "C") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tZRC, 1");
+		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "R" || codeeditor.value.substring(0, s) == "s" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "SKP\tRUN, 1");
+		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "a" || codeeditor.value.substring(0, s) == "r" && event.data === "a") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDA\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "A" || codeeditor.value.substring(0, s) == "r" && event.data === "A") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDA\taddr, 1.0");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "5" || codeeditor.value.substring(0, s) == "r" && event.data === "5") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDA\taddr, -0.5");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "%" || codeeditor.value.substring(0, s) == "r" && event.data === "%") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RDA\taddr, 0.5");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "a" || codeeditor.value.substring(0, s) == "w" && event.data === "a") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRA\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "A" || codeeditor.value.substring(0, s) == "w" && event.data === "A") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRA\taddr, 0.0");
+		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "p" || codeeditor.value.substring(0, s) == "r" && event.data === "p") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RMPA\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "P" || codeeditor.value.substring(0, s) == "r" && event.data === "P") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "RMPA\t1.0");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "p" || codeeditor.value.substring(0, s) == "w" && event.data === "p") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAP\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "P" || codeeditor.value.substring(0, s) == "w" && event.data === "P") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAP\taddr, 0.5");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "5" || codeeditor.value.substring(0, s) == "w" && event.data === "5") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAP\taddr, 0.5");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nw" && event.data === "%" || codeeditor.value.substring(0, s) == "w" && event.data === "%") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WRAP\taddr, -0.5");
+		this.selectionStart = s + 4;this.selectionEnd = s + 4 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nd" && event.data === "s" || codeeditor.value.substring(0, s) == "d" && event.data === "s") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WLDS\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nd" && event.data === "S" || codeeditor.value.substring(0, s) == "d" && event.data === "S") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WLDS\tSIN0, 512, 32767");
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nd" && event.data === "r" || codeeditor.value.substring(0, s) == "d" && event.data === "r") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WLDR\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nd" && event.data === "R" || codeeditor.value.substring(0, s) == "d" && event.data === "R") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "WLDR\tRMP0, 32767, 4096");
+		this.selectionStart = s + 7;this.selectionEnd = s + 7 + 5;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "m" || codeeditor.value.substring(0, s) == "j" && event.data === "m") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "JAM");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "M" || codeeditor.value.substring(0, s) == "j" && event.data === "M") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "JAM\n");
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "o" || codeeditor.value.substring(0, s) == "c" && event.data === "o") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\t");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "O" || codeeditor.value.substring(0, s) == "c" && event.data === "O") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDAL, SIN0");
+		this.selectionStart = s + 9;this.selectionEnd = s + 9 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "L" || codeeditor.value.substring(0, s) == "c" && event.data === "L") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDAL, SIN0");
+		this.selectionStart = s + 9;this.selectionEnd = s + 9 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "f" || codeeditor.value.substring(0, s) == "c" && event.data === "f") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tSOF, RMP0, NA | COMPC, 0.0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "F" || codeeditor.value.substring(0, s) == "c" && event.data === "F") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tSOF, RMP0, NA | COMPC, 0.0\nCHO\tRDA, RMP0, NA, addr");
+		this.selectionStart = s + 49;this.selectionEnd = s + 49 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "A" || codeeditor.value.substring(0, s) == "c" && event.data === "A") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, SIN0, SIN | REG | COMPC, addr");
+		this.selectionStart = s + 33;this.selectionEnd = s + 33 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "s" || codeeditor.value.substring(0, s) == "c" && event.data === "s") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, SIN0, SIN | REG | COMPC, addr\nCHO\tRDA, SIN0, SIN, addr+1");
+		this.selectionStart = s + 33;this.selectionEnd = s + 33 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "S" || codeeditor.value.substring(0, s) == "c" && event.data === "S") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, SIN0, SIN | REG | COMPA, addr\nCHO\tRDA, SIN0, SIN | COMPC | COMPA, addr+1");
+		this.selectionStart = s + 33;this.selectionEnd = s + 33 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "c" || codeeditor.value.substring(0, s) == "c" && event.data === "c") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, SIN0, COS | REG | COMPC, addr\nCHO\tRDA, SIN0, COS, addr+1");
+		this.selectionStart = s + 33;this.selectionEnd = s + 33 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "C" || codeeditor.value.substring(0, s) == "c" && event.data === "C") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, SIN0, COS | REG | COMPA, addr\nCHO\tRDA, SIN0, COS | COMPC | COMPA, addr+1");
+		this.selectionStart = s + 33;this.selectionEnd = s + 33 + 4;
+	}
+
+
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "p" || codeeditor.value.substring(0, s) == "c" && event.data === "p") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, RMP0, REG | COMPC, addr\nCHO\tRDA, RMP0, 0, addr+1");
+		this.selectionStart = s + 27;this.selectionEnd = s + 27 + 4;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nc" && event.data === "P" || codeeditor.value.substring(0, s) == "c" && event.data === "P") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "CHO\tRDA, RMP0, COMPC | RPTR2, addr\nCHO\tRDA, RMP0, RPTR2, addr+1");
+		this.selectionStart = s + 29;this.selectionEnd = s + 29 + 4;
+	}
+
+	if (edited == "") {
+		edited = "*";
+		onTextChanged({textName:"edited", textContent:edited});
+	}
+});
+codeeditor.addEventListener("keydown", function () {
+	if (event.key === "Tab") {
+		event.preventDefault();
+		var sPos = this.selectionStart;
+		var ePos = this.selectionEnd;
+		codeeditor.setRangeText("\t", sPos, ePos, "end");
+	}
+});
+function syncScroll() {
+	ce_overlay.scrollTop = codeeditor.scrollTop;
+	ce_overlay.scrollLeft = codeeditor.scrollLeft;
+	ce_lines.scrollTop = codeeditor.scrollTop;
+}
+codeeditor.addEventListener("scroll", function () {
+	syncScroll();
+});
+
+
+sys_runbutton.addEventListener("click", function () {
+	run();
+});
+
+
+function closeTf() {
+	t_f.style = "display: none;";
+	t_file.style = "";
+	show_t_f = false;
+}
+function closeTv() {
+	t_v.style = "display: none;";
+	t_view.style = "";
+	show_t_v = false;
+}
+function closeTt() {
+	t_t.style = "display: none;";
+	t_tool.style = "";
+	show_t_t = false;
+}
+function openTf() {
+	t_f.style = "";
+	t_file.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
+	show_t_f = true;
+}
+function openTv() {
+	t_v.style = "";
+	t_view.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
+	show_t_v = true;
+}
+function openTt() {
+	t_t.style = "";
+	t_tool.style = "background-color:var(--bg-tool-active);border-color:var(--bd-tool-active);";
+	show_t_t = true;
+}
+body.addEventListener("mousedown", function () {closeTf();closeTv();closeTt();});
+
+function drawMenuChk(t) {
+	t.innerHTML = 
+"<svg width='18' height='18'><line x1='5.5' y1='8' x2='9.1' y2='11.5' stroke='black' stroke-width='1.1' /><line x1='9' y1='11' x2='15' y2='5' stroke='black' stroke-width='1.1' /></svg>";
+}
+
+t_f.addEventListener("mousedown", function () {event.stopPropagation();});
+t_file.addEventListener("mousedown", function () {
+	event.stopPropagation();
+	if (show_t_f == false) {openTf();} else {closeTf();}
+});
+t_file.addEventListener("mouseenter", function () {
+	if (show_t_f == true || show_t_v == true || show_t_t == true) {openTf();closeTv();closeTt();}
+});
+t_f_open.addEventListener("mouseup", function () {
+	closeTf();
+	onCalled({callName:"open", callArg:0});
+});
+t_f_save.addEventListener("mouseup", function () {
+	closeTf();
+	if (filename == "") {
+		onCalled({callName:"saveas", callArg:0});
+	} else {
+		edited = "";
+		filename_label.innerText = filename;
+		onCalled({callName:"save", callArg:0});
+	}
+});
+t_f_saveas.addEventListener("mouseup", function () {
+	closeTf();
+	onCalled({callName:"saveas", callArg:0});
+});
+t_f_close.addEventListener("mouseup", function () {
+	closeTf();
+
+	codeeditor.value = "";
+	filename_label.innerText = "";
+	filename_label.style = "display:none;";
+	filename = "";
+	edited = "";
+
+	getInstructions(getLines(codeeditor.value));
+
+	onCalled({callName:"close", callArg:0});
+	onTextChanged({textName:"code", textContent:codeeditor.value});
+});
+
+darkUI = false;
+function setLight() {
+	darkUI = false;
+	t_v_dark_c.style = "";
+
+	body.style.setProperty("scrollbar-color", "auto");
+	body.style.setProperty("--fg", "#464646");
+	body.style.setProperty("--code", "#333");
+	body.style.setProperty("--fg-lines", "#CCC");
+
+	body.style.setProperty("--bg", "#FFFFFF");
+	body.style.setProperty("--bg-editor", "#FFFFFF");
+	body.style.setProperty("--bg-select", "#CCC");
+	body.style.setProperty("--bg-sub", "#F8F8F8");
+	body.style.setProperty("--bg-menu", "#F0F0F0");
+	body.style.setProperty("--bg-plot", "#303030");
+	body.style.setProperty("--bg-label", "#F0F0F0");
+	body.style.setProperty("--bg-button-base", "#EFEFEF");
+	body.style.setProperty("--bg-button-hover", "#E5E5E5");
+	body.style.setProperty("--bg-button-active", "#F5F5F5");
+
+	body.style.setProperty("--bd-light", "#F0F0F0");
+	body.style.setProperty("--bd-heavy", "#909090");
+	body.style.setProperty("--bd-thin", "#D0D0D0");
+	body.style.setProperty("--bd-plot", "#FFFFFF");
+	body.style.setProperty("--bd-button-base", "#767676");
+	body.style.setProperty("--bd-button-hover", "#4F4F4F");
+	body.style.setProperty("--bd-button-active", "#8D8D8D");
+
+	body.style.setProperty("--bg-tool-hover", "#E5F3FF");
+	body.style.setProperty("--bg-tool-active", "#CCE8FF");
+	body.style.setProperty("--bd-tool-hover", "#CCE8FF");
+	body.style.setProperty("--bd-tool-active", "#99D1FF");
+	body.style.setProperty("--bg-tool-inner-hover", "#90C8F6");
+	body.style.setProperty("--bg-tool-inner-chk", "rgba(50, 162, 254, 0.5)");
+	body.style.setProperty("--bg-tool-inner-hr", "#D7D7D7");
+
+	body.style.setProperty("--blue-light", "#C9E5F6");
+	body.style.setProperty("--blue-base", "#7ABEF0");
+	body.style.setProperty("--blue-heavy", "#2B94F3");
+	sim_knob_outline_circle0.innerHTML = 
+	sim_knob_outline_circle1.innerHTML = 
+	sim_knob_outline_circle2.innerHTML = 
+	sim_knob_outline_circle3.innerHTML = "<circle cx='20' cy='20' r='20' fill='none' stroke='#BEE0F5' stroke-width='2.25' />";
+
+	body.style.setProperty("--sh-comment", "#B2BFB4");
+	body.style.setProperty("--sh-label", "#AF6C00");
+	body.style.setProperty("--sh-mem", "#167584");
+	body.style.setProperty("--sh-equ", "#C05656");
+	body.style.setProperty("--sh-flag", "#1659DF");
+	ce_overlay.style.mixBlendMode = "screen";
+	edit_area.style = "";
+	edit_area_right.style = "";
+
+	if (bypass == true) {setBybass();} else {clearBybass();}
+	if (mute == true) {setMute();} else {clearMute();}
+}
+function setDark() {
+	darkUI = true;
+	t_v_dark_c.style.opacity = "1";
+	drawMenuChk(t_v_dark_c);
+
+	body.style.setProperty("scrollbar-color", "#909090 #1F1F1F");
+	body.style.setProperty("--fg", "#D8D8D8");
+	body.style.setProperty("--code", "#E0E0E0");
+	body.style.setProperty("--fg-lines", "#888");
+
+	body.style.setProperty("--bg", "#1F1F1F");
+	body.style.setProperty("--bg-editor", "#000");
+	body.style.setProperty("--bg-select", "#888");
+	body.style.setProperty("--bg-sub", "#323232");
+	body.style.setProperty("--bg-menu", "#323232");
+	body.style.setProperty("--bg-plot", "#1F1F1F");
+	body.style.setProperty("--bg-label", "#464646");
+	body.style.setProperty("--bg-button-base", "#1F1F1F");
+	body.style.setProperty("--bg-button-hover", "#323232");
+	body.style.setProperty("--bg-button-active", "#1F1F1F");
+
+	body.style.setProperty("--bd-light", "#606060");
+	body.style.setProperty("--bd-heavy", "#909090");
+	body.style.setProperty("--bd-thin", "#808080");
+	body.style.setProperty("--bd-plot", "#909090");
+	body.style.setProperty("--bd-button-base", "#A0A0A0");
+	body.style.setProperty("--bd-button-hover", "#C0C0C0");
+	body.style.setProperty("--bd-button-active", "#808080");
+
+	body.style.setProperty("--bg-tool-hover", "#606060");
+	body.style.setProperty("--bg-tool-active", "#808080");
+	body.style.setProperty("--bd-tool-hover", "#808080");
+	body.style.setProperty("--bd-tool-active", "#A0A0A0");
+	body.style.setProperty("--bg-tool-inner-hover", "#808080");
+	body.style.setProperty("--bg-tool-inner-chk", "rgba(206, 206, 206, 0.5)");
+	body.style.setProperty("--bg-tool-inner-hr", "#808080");
+
+	body.style.setProperty("--blue-light", "#2C699F");
+	body.style.setProperty("--blue-base", "#3386C3");
+	body.style.setProperty("--blue-heavy", "#D6EDFB");
+	sim_knob_outline_circle0.innerHTML = 
+	sim_knob_outline_circle1.innerHTML = 
+	sim_knob_outline_circle2.innerHTML = 
+	sim_knob_outline_circle3.innerHTML = "<circle cx='20' cy='20' r='20' fill='none' stroke='#2C699F' stroke-width='2.25' />";
+
+	body.style.setProperty("--sh-comment", "#5D7561");
+	body.style.setProperty("--sh-label", "#E7B24A");
+	body.style.setProperty("--sh-mem", "#6DB9C5");
+	body.style.setProperty("--sh-equ", "#F5A0A0");
+	body.style.setProperty("--sh-flag", "#6DA2FF");
+	ce_overlay.style.mixBlendMode = "multiply";
+	edit_area.style.backgroundColor = "#FFF";
+	edit_area_right.style.opacity = "0.88";
+
+	if (bypass == true) {setBybass();} else {clearBybass();}
+	if (mute == true) {setMute();} else {clearMute();}
+}
+setLight();
+function setSize(s) {
+	size = s;
+	if (s == 3) {
+		t_v_s3_c.style.opacity = "1";
+		t_v_s7_c.style = "";
+		t_v_s1_c.style = "";
+		drawMenuChk(t_v_s3_c);
+	} else if (s == 7) {
+		t_v_s3_c.style = "";
+		t_v_s7_c.style.opacity = "1";
+		t_v_s1_c.style = "";
+		drawMenuChk(t_v_s7_c);
+	} else {
+		t_v_s7_c.style = "";
+		t_v_s3_c.style = "";
+		t_v_s1_c.style.opacity = "1";
+		drawMenuChk(t_v_s1_c);
+	}
+}
+setSize(7);
+sf = false;
+function showFont() {
+	sf = true;
+	edit_top.style.opacity = "1";
+	edit_top.style.height = "20px";
+	edit_top.style.borderBottom = "1px solid var(--bd-thin)";
+	edit_area.style.height = "calc(100% - 20px - 20px)";
+	t_v_font_c.style.opacity = "1";
+	drawMenuChk(t_v_font_c);
+}
+function hideFont() {
+	sf = false;
+	edit_top.style = "";
+	edit_area.style.height = "";
+	t_v_font_c.style = "";
+}
+function switchShowFont() {if (sf == false) {showFont();} else {hideFont();}}
+hideFont();
+t_v.addEventListener("mousedown", function () {event.stopPropagation();});
+t_view.addEventListener("mousedown", function () {
+	event.stopPropagation();
+	if (show_t_v == false) {openTv();} else {closeTv();}
+});
+t_view.addEventListener("mouseenter", function () {
+	if (show_t_f == true || show_t_v == true || show_t_t == true) {closeTf();openTv();closeTt();}
+});
+t_v_s3.addEventListener("mouseup", function () {
+	closeTv();
+	setSize(3);
+	onCalled({callName:"ui_size", callArg:3});
+});
+t_v_s7.addEventListener("mouseup", function () {
+	closeTv();
+	setSize(7);
+	onCalled({callName:"ui_size", callArg:7});
+});
+t_v_s1.addEventListener("mouseup", function () {
+	closeTv();
+	setSize(1);
+	onCalled({callName:"ui_size", callArg:1});
+});
+t_v_font.addEventListener("mouseup", function () {
+	closeTv();
+	switchShowFont();
+});
+t_v_dark.addEventListener("mouseup", function () {
+	closeTv();
+	if (darkUI == true) {
+		setLight();
+		onCalled({callName:"ui_dark", callArg:0});
+	} else {
+		setDark();
+		onCalled({callName:"ui_dark", callArg:1});
+	}
+});
+t_v_reset.addEventListener("mouseup", function () {
+	closeTv();
+	hideFont();
+	setFont("");
+	resetFontSize();
+	onCalled({callName:"ui_lh", callArg:lineheight});
+	onCalled({callName:"ui_fs", callArg:fontsize});
+});
+
+resampling = true;
+function setResampling() {
+	resampling = true;
+	t_t_rs_c.style.opacity = "1";
+	drawMenuChk(t_t_rs_c);
+}
+function clearResampling() {
+	resampling = false;
+	t_t_rs_c.style = "";
+}
+setResampling();
+t_t.addEventListener("mousedown", function () {event.stopPropagation();});
+t_tool.addEventListener("mousedown", function () {
+	event.stopPropagation();
+	if (show_t_t == false) {openTt();} else {closeTt();}
+});
+t_tool.addEventListener("mouseenter", function () {
+	if (show_t_f == true || show_t_v == true || show_t_t == true) {closeTf();closeTv();openTt();}
+});
+t_t_rs.addEventListener("mouseup", function () {
+	closeTt();
+	if (resampling == true) {
+		clearResampling();
+		onCalled({callName:"sys_rs", callArg:0});
+	} else {
+		setResampling();
+		onCalled({callName:"sys_rs", callArg:1});
+	}
+});
+
+
+ff = "";
+function setFont(f) {
+	ff = f;
+	if (ff == "") {
+		ff = '"Menlo", "Consolas", "Monaco", "Liberation Mono", "Lucida Console", monospace';
+		edit_font.value = ff;
+	}
+	body.style.setProperty("--code-font", ff);
+}
+edit_ap.addEventListener("click", function () {
+	setFont(edit_font.value);
+	onTextChanged({textName:"ui_font", textContent:edit_font.value});
+});
+edit_cl.addEventListener("click", function () {
+	setFont("");
+	onTextChanged({textName:"ui_font", textContent:edit_font.value});
+});
+setFont("");
+
+
+fontsize = 12;
+lineheight = 1;
+function setLineHeight() {
+	if (lineheight < 0) {lineheight = 0;} else if (lineheight > 50) {lineheight = 50;}
+	codeeditor.style.lineHeight = fontsize + lineheight + "px";
+	ce_overlay.style.lineHeight = fontsize + lineheight + "px";
+	ce_lines.style.lineHeight = fontsize + lineheight + "px";
+	syncScroll();
+}
+function setFontSize() {
+	if (fontsize < 0) {fontsize = 0;} else if (fontsize > 50) {fontsize = 50;}
+	codeeditor.style.fontSize = fontsize + "px";
+	ce_overlay.style.fontSize = fontsize + "px";
+	if (fontsize <= 12) {ce_lines.style.fontSize = fontsize + "px";}
+	setLineHeight();
+}
+function resetFontSize() {
+	fontsize = 12;
+	lineheight = 1;
+	setFontSize();
+}
+ce_tool_lp.addEventListener("click", function () {
+	lineheight++;
+	setLineHeight();
+	onCalled({callName:"ui_lh", callArg:lineheight});
+});
+ce_tool_lm.addEventListener("click", function () {
+	lineheight--;
+	setLineHeight();
+	onCalled({callName:"ui_lh", callArg:lineheight});
+});
+ce_tool_sp.addEventListener("click", function () {
+	fontsize++;
+	setFontSize();
+	onCalled({callName:"ui_fs", callArg:fontsize});
+});
+ce_tool_sm.addEventListener("click", function () {
+	fontsize--;
+	setFontSize();
+	onCalled({callName:"ui_fs", callArg:fontsize});
+});
+ce_tool_sz.addEventListener("click", function () {
+	resetFontSize();
+	onCalled({callName:"ui_lh", callArg:lineheight});
+	onCalled({callName:"ui_fs", callArg:fontsize});
+});
+resetFontSize();
+
+
+// Event callback from C++
+function onParameterChanged(jsonData){
+	// This is the function that will be called from C++
+	//console.log('JSON from C++: ', jsonData);
+
+	// Access the 'type' property in the JSON data
+	const parameterName = jsonData.parameterName;
+	const jValue = jsonData.parameterValue;
+
+	// Update the HTML label with the message
+	if (parameterName === "sys_ingain") {
+		//console.log('sys_ingain: ', jValue);
+		sys_ingain.value = jValue;
+		sys_ingainLabel.innerText = getLabelValue((jValue - decibelMin).toFixed(1));
+	}
+	else if (parameterName === "sys_outgain") {
+		//console.log('sys_outgain: ', jValue);
+		sys_outgain.value = jValue;
+		sys_outgainLabel.innerText = getLabelValue((jValue - decibelMin).toFixed(1));
+	}
+	else if (parameterName === "sys_bypass") {
+		if (jValue > 0.5) {setBybass();} else {clearBybass();}
+	}
+	else if (parameterName === "sys_mute") {
+		if (jValue > 0.5) {setMute();} else {clearMute();}
+	}
+	else if (parameterName === "pot0_ctrl" && dragging == false) {
+		if (jValue != 0) {
+			knob0value = jValue;
+			sim_knob0_label.innerText = (jValue.toFixed(3) + "").substring(1);
+			sim_knob0_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
+		} else {
+			knob0reset()
+		}
+	}
+	else if (parameterName === "pot1_ctrl" && dragging == false) {
+		if (jValue != 0) {
+			knob1value = jValue;
+			sim_knob1_label.innerText = (jValue.toFixed(3) + "").substring(1);
+			sim_knob1_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
+		} else {
+			knob1reset()
+		}
+	}
+	else if (parameterName === "pot2_ctrl" && dragging == false) {
+		if (jValue != 0) {
+			knob2value = jValue;
+			sim_knob2_label.innerText = (jValue.toFixed(3) + "").substring(1);
+			sim_knob2_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
+		} else {
+			knob2reset()
+		}
+	}
+	else if (parameterName === "pot3_ctrl" && dragging == false) {
+		if (jValue != 0) {
+			knob3value = jValue;
+			sim_knob3_label.innerText = (jValue.toFixed(3) + "").substring(1);
+			sim_knob3_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
+		} else {
+			knob3reset()
+		}
+	}
+	else if (parameterName === "sys_wf_send" && mute == false) {
+		setPlotBar(jsonData.wf0max, jsonData.wf0min,
+			jsonData.wf1max, jsonData.wf1min,
+			jsonData.wf2max, jsonData.wf2min,
+			jsonData.wf3max, jsonData.wf3min);
+	}
+	else if (parameterName === "sys_wf0_sel") {
+		reg_sel0 = jValue;
+		regname_label0.innerText = regname[jValue];
+	}
+	else if (parameterName === "sys_wf1_sel") {
+		reg_sel1 = jValue;
+		regname_label1.innerText = regname[jValue];
+	}
+	else if (parameterName === "sys_wf2_sel") {
+		reg_sel2 = jValue;
+		regname_label2.innerText = regname[jValue];
+	}
+	else if (parameterName === "sys_wf3_sel") {
+		reg_sel3 = jValue;
+		regname_label3.innerText = regname[jValue];
+	}
+	else if (parameterName === "ui_font") {
+		setFont(jsonData.parameterFont);
+	}
+	else if (parameterName === "ui_dark") {
+		if (jValue > 0.5) {setDark();} else {setLight();}
+	}
+	else if (parameterName === "ui_size") {
+		setSize(jValue);
+	}
+	else if (parameterName === "ui_lh") {
+		lineheight = Math.round(jValue);
+	}
+	else if (parameterName === "ui_fs") {
+		fontsize = Math.round(jValue);
+		setFontSize();
+	}
+	else if (parameterName === "sys_loadfile") {
+		const jFilename = jsonData.parameterFilename;
+		const jCode = jsonData.parameterCode;
+		const jEdited = jsonData.parameterEdited;
+		filename = jFilename;
+		codeeditor.value = jCode;
+		setOverlay(codeeditor.value);
+		getInstructions(getLines(codeeditor.value));
+		edited = jEdited;
+
+		if (jFilename == "") {
+			filename_label.innerText = "";
+			filename_label.style = "display:none;";
+		} else {
+			filename_label.innerText = filename + edited;
+			filename_label.style = "";
+		}
+
+		sendMessage("ready");
+		insts = getInstructions(getLines(codeeditor.value));
+	}
+	else if (parameterName === "sys_running") {
+		if (jValue != 0) {
+			running = true;
+			sys_runbutton.innerText = "STOP";
+			sys_sim.style = "opacity: 100%;";
+
+			opcodes = getOpCode(replaceMemEqu(insts.slice()));
+
+			const jsonData = Object.fromEntries(opcodes.map((value, index) =>
+				['op' + (Math.floor(index / 3) / 1000).toFixed(3).toString().substring(2) + "_" + (index % 3), value]));
+			onOpChanged(jsonData);
+		}
+	}
+	else if (parameterName === "sys_rs") {
+		if (jValue > 0.5) {setResampling();} else {clearResampling();}
+	}
+}
+onInitialUpdate();
+</script>
+
+
+</body>
+</html>
