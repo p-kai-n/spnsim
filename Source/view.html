@@ -1480,9 +1480,17 @@ function getOpCode(arrinsts) {
 					arrtemp[2] = Math.floor(calcConst(arrtemp[2]) * max);
 
 				} else if (14 <= j && j <= 16) {
-					if (arrtemp[1].indexOf("%1") == -1) {
+					if (arrtemp[1].indexOf("$") != -1) {
+						arrtemp[1] = parseInt(arrtemp[1].replace("$", ""), 16).toString(2);
+						if (arrtemp[1].length == 24 && arrtemp[1].charAt(0) == "1") {
+							arrtemp[1] = "%" + arrtemp[1];
+						} else {
+							arrtemp[1] = "%0" + arrtemp[1];
+						}
+					}
+					if (arrtemp[1].indexOf("%0") != -1) {
 						arrtemp[1] = parseInt(arrtemp[1].replace("%", "").replaceAll("_", ""), 2);
-					} else {
+					} else if (arrtemp[1].indexOf("%1") != -1) {
 						arrtemp[1] = -1 * parseInt(arrtemp[1].replace("%", "").replaceAll("_", "")
 							.replaceAll("0", "z")
 							.replaceAll("1", "0")
@@ -2316,6 +2324,16 @@ codeeditor.addEventListener("beforeinput", function () {
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "AND\t%11111111_11111111_11111111");
 	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "6" || codeeditor.value.substring(0, s) == "a" && event.data === "6") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t$000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\na" && event.data === "F" || codeeditor.value.substring(0, s) == "a" && event.data === "F") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "AND\t$FFFFFF");
+	}
 
 
 	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "r" || codeeditor.value.substring(0, s) == "o" && event.data === "r") {
@@ -2338,6 +2356,16 @@ codeeditor.addEventListener("beforeinput", function () {
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "OR\t%11111111_11111111_11111111");
 	}
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "6" || codeeditor.value.substring(0, s) == "o" && event.data === "6") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t$000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\no" && event.data === "F" || codeeditor.value.substring(0, s) == "o" && event.data === "F") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "OR\t$FFFFFF");
+	}
 
 
 	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "r" || codeeditor.value.substring(0, s) == "x" && event.data === "r") {
@@ -2359,6 +2387,16 @@ codeeditor.addEventListener("beforeinput", function () {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "XOR\t%11111111_11111111_11111111");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "6" || codeeditor.value.substring(0, s) == "x" && event.data === "6") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t$000000");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nx" && event.data === "F" || codeeditor.value.substring(0, s) == "x" && event.data === "F") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "XOR\t$FFFFFF");
 	}
 
 

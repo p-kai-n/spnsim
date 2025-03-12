@@ -46,8 +46,6 @@ public:
 
     //==============================================================================
     juce::AudioProcessorValueTreeState& getAPVTS() { return *parameters.get(); }
-    int& getWindowsize_x() { return ui_windowsize_x; }
-    int& getWindowsize_y() { return ui_windowsize_y; }
 
     void resetRegisters() {
         reg.fill(0);
@@ -504,22 +502,20 @@ private:
     juce::String sys_edited;
     juce::String sys_code;
     unsigned __int8 sys_running;
+    
+    const int bm = 4095;
+    std::array<float, 4096> lInput_buff2x;//should set bigger array length to support long block size
+    std::array<float, 4096> rInput_buff2x;
+    std::array<float, 4096> lInput_buff2x3d;
+    std::array<float, 4096> rInput_buff2x3d;
 
-    int ui_windowsize_x;
-    int ui_windowsize_y;
-
-    std::array<float, 2048> lInput_buff2x;//should set bigger size to support long block size
-    std::array<float, 2048> rInput_buff2x;
-    std::array<float, 2048> lInput_buff2x3d;
-    std::array<float, 2048> rInput_buff2x3d;
+    std::array<float, 4096> lOutput_buff;
+    std::array<float, 4096> rOutput_buff;
+    std::array<float, 4096> lOutput_buff3x;
+    std::array<float, 4096> rOutput_buff3x;
 
     juce::dsp::FIR::Filter<float> lInput_usLPF;
     juce::dsp::FIR::Filter<float> rInput_usLPF;
-
-    std::array<float, 2048> lOutput_buff;
-    std::array<float, 2048> rOutput_buff;
-    std::array<float, 2048> lOutput_buff3x;//should set bigger size to support long block size
-    std::array<float, 2048> rOutput_buff3x;
 
     juce::dsp::FIR::Filter<float> lOutput_usLPF;
     juce::dsp::FIR::Filter<float> rOutput_usLPF;

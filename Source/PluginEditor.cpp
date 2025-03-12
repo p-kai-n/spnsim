@@ -485,10 +485,10 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AudioPluginAudioProcessorEditor::resized()
 {
-    auto rect_ui = getLocalBounds();
+    /*auto rect_ui = getLocalBounds();
 
     auto gainRect = rect_ui.removeFromTop (paramControlHeight);
-    /*sys_ingainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
+    sys_ingainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
     sys_ingainSlider.setBounds (gainRect);
 
     invertButton.setBounds (rect_ui.removeFromTop (paramControlHeight));*/

@@ -97,12 +97,12 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
-
+    /*
     typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
     typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
-    
+    */
     juce::AudioProcessorValueTreeState& valueTreeState;
- /*
+    /*
     juce::Slider sys_ingainSlider;
     std::unique_ptr<SliderAttachment> sys_ingainAttachment;
     juce::Slider sys_outgainSlider;

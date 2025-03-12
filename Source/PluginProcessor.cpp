@@ -263,25 +263,26 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     if (sys_rs->load() != 0.0f) {
         for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
             auto ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
-            lInput_buff2x[(samplesIdx * 2)] = lInput[samplesIdx] * ingain;
-            rInput_buff2x[(samplesIdx * 2)] = rInput[samplesIdx] * ingain;
+            lInput_buff2x[std::clamp((samplesIdx * 2), 0, bm)] = lInput[samplesIdx] * ingain;
+            rInput_buff2x[std::clamp((samplesIdx * 2), 0, bm)] = rInput[samplesIdx] * ingain;
         }
         for (int samplesIdx = 0; samplesIdx < buffLength * 2; samplesIdx++) {
-            lInput_buff2x[samplesIdx] = lInput_usLPF.processSample(lInput_buff2x[samplesIdx]);
-            rInput_buff2x[samplesIdx] = rInput_usLPF.processSample(rInput_buff2x[samplesIdx]);
+            lInput_buff2x[std::clamp((samplesIdx), 0, bm)] = lInput_usLPF.processSample(lInput_buff2x[std::clamp((samplesIdx), 0, bm)]);
+            rInput_buff2x[std::clamp((samplesIdx), 0, bm)] = rInput_usLPF.processSample(rInput_buff2x[std::clamp((samplesIdx), 0, bm)]);
         }
         for (int samplesIdx = 0; samplesIdx * 3 < buffLength * 2; samplesIdx++) {
-            lInput_buff2x3d[samplesIdx] = float(lInput_buff2x[(samplesIdx * 3)] * 2.0);
-            rInput_buff2x3d[samplesIdx] = float(rInput_buff2x[(samplesIdx * 3)] * 2.0);
+            lInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = float(lInput_buff2x[std::clamp((samplesIdx * 3), 0, bm)] * 2.0);
+            rInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = float(rInput_buff2x[std::clamp((samplesIdx * 3), 0, bm)] * 2.0);
             inBuffLength++;
         }
+        inBuffLength = unsigned __int16(std::clamp((int(inBuffLength)), 0, bm));
     } else {
         for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
             auto ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
-            lInput_buff2x3d[samplesIdx] = lInput[samplesIdx] * ingain;
-            rInput_buff2x3d[samplesIdx] = rInput[samplesIdx] * ingain;
+            lInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = lInput[samplesIdx] * ingain;
+            rInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = rInput[samplesIdx] * ingain;
         }
-        inBuffLength = unsigned __int16(buffLength);
+        inBuffLength = unsigned __int16(std::clamp(buffLength, 0, bm));
     }
 
     for (int samplesIdx = 0; samplesIdx < inBuffLength; samplesIdx++) {
@@ -826,12 +827,12 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     if (sys_rs->load() != 0.0f) {
         for (int samplesIdx = 0; samplesIdx < inBuffLength; samplesIdx++) {
-            lOutput_buff3x[(samplesIdx * 3)] = lOutput_buff[samplesIdx];
-            rOutput_buff3x[(samplesIdx * 3)] = rOutput_buff[samplesIdx];
+            lOutput_buff3x[std::clamp((samplesIdx * 3), 0, bm)] = lOutput_buff[std::clamp((samplesIdx), 0, bm)];
+            rOutput_buff3x[std::clamp((samplesIdx * 3), 0, bm)] = rOutput_buff[std::clamp((samplesIdx), 0, bm)];
         }
         for (int samplesIdx = 0; samplesIdx < inBuffLength * 3; samplesIdx++) {
-            lOutput_buff3x[samplesIdx] = lOutput_usLPF.processSample(lOutput_buff3x[samplesIdx]);
-            rOutput_buff3x[samplesIdx] = rOutput_usLPF.processSample(rOutput_buff3x[samplesIdx]);
+            lOutput_buff3x[std::clamp((samplesIdx), 0, bm)] = lOutput_usLPF.processSample(lOutput_buff3x[std::clamp((samplesIdx), 0, bm)]);
+            rOutput_buff3x[std::clamp((samplesIdx), 0, bm)] = rOutput_usLPF.processSample(rOutput_buff3x[std::clamp((samplesIdx), 0, bm)]);
         }
     }
     } else {
@@ -866,11 +867,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
 
         if (sys_rs->load() != 0.0f) {
-            lOutput[samplesIdx] = float(((lOutput_buff3x[(samplesIdx * 2)] + lDry) * outgain * 3.0) + (lBypass * (1 - bypassgain))) * mutegain;
-            rOutput[samplesIdx] = float(((rOutput_buff3x[(samplesIdx * 2)] + rDry) * outgain * 3.0) + (rBypass * (1 - bypassgain))) * mutegain;
+            lOutput[samplesIdx] = float(((lOutput_buff3x[std::clamp((samplesIdx * 2), 0, bm)] + lDry) * outgain * 3.0) + (lBypass * (1 - bypassgain))) * mutegain;
+            rOutput[samplesIdx] = float(((rOutput_buff3x[std::clamp((samplesIdx * 2), 0, bm)] + rDry) * outgain * 3.0) + (rBypass * (1 - bypassgain))) * mutegain;
         } else {
-            lOutput[samplesIdx] = float(((lOutput_buff[samplesIdx] + lDry) * outgain) + (lBypass * (1 - bypassgain))) * mutegain;
-            rOutput[samplesIdx] = float(((rOutput_buff[samplesIdx] + rDry) * outgain) + (rBypass * (1 - bypassgain))) * mutegain;
+            lOutput[samplesIdx] = float(((lOutput_buff[std::clamp((samplesIdx), 0, bm)] + lDry) * outgain) + (lBypass * (1 - bypassgain))) * mutegain;
+            rOutput[samplesIdx] = float(((rOutput_buff[std::clamp((samplesIdx), 0, bm)] + rDry) * outgain) + (rBypass * (1 - bypassgain))) * mutegain;
         }
     }
 
