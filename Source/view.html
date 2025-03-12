@@ -1122,7 +1122,7 @@ function setOverlay(txt) {
 				.replace("RUN", "<span class='ce_flag'>RUN</span>") + 
 				",<span class='ce_label'>" + arrtemp[0].split(",")[1];
 		}
-		else if (arrtemp[0].charAt(arrlines[i].length - 1) == ":") {
+		else if (arrtemp[0].trim().charAt(arrtemp[0].trim().length - 1) == ":") {
 			txt += "<span class='ce_label'>" + arrtemp[0];
 		}
 
@@ -1208,7 +1208,7 @@ function getInstructions(arrlines) {
 		if (arrlines[i].substring(0, 4) == "MEM ") {
 			arrtemp = arrlines[i].substring(4).split(" ");
 			memequ_w[k] = arrtemp[0];
-			memequ_v[k] = Number(arrtemp[1]) + Number(memequ_v[k - 1] + 1);
+			memequ_v[k] = Number(arrtemp[1]) + Number(memequ_v[k - 1]);
 			k++
 
 		} else if (arrlines[i].substring(0, 4) == "EQU ") {
@@ -1239,7 +1239,7 @@ function getInstructions(arrlines) {
 
 	insts_label.innerText = arrinsts.length;
 	if (memequ_v.length > 1) {
-		mem_label.innerText = (Number(memequ_v[memequ_v.length - 1]) - 1);
+		mem_label.innerText = (Number(memequ_v[memequ_v.length - 1]));
 	} else {
 		mem_label.innerText = 0;
 	}
@@ -1424,8 +1424,12 @@ function calcConst(cst) {
 		cst = Number(cst.split("+")[0]) + Number(cst.split("+")[1]);
 	} else if (cst.indexOf("-") != -1) {
 		cst = Number(cst.split("-")[0]) - Number(cst.split("-")[1]);
+	} else if (cst.indexOf("*") != -1) {
+		cst = Number(cst.split("*")[0].trim()) * Number(cst.split("*")[1].trim());
+	} else if (cst.indexOf("/") != -1) {
+		cst = Number(cst.split("/")[0].trim()) / Number(cst.split("/")[1].trim());
 	}
-	return(cst);
+	return(Number(cst));
 };
 
 function getOpCode(arrinsts) {
