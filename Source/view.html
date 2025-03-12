@@ -1744,27 +1744,26 @@ sim_knob3.addEventListener("pointermove", function (e) {
 });
 
 knob_name = 0;
-function calcKnobName(v, m) {
-	v = (v + m / -10);
-	if (v > 33) {v = 33;} else if (v < 0) {v = 0;}
-	fv = Math.floor(v);
-	knob_name = v;
-	if (fv == 0) {
+fkn = 0;
+function calcKnobName(m) {
+	knob_name = knob_name + (m / -10);
+	if (knob_name > 33) {knob_name = 33;} else if (knob_name < 0) {knob_name = 0;}
+	fkn = Math.floor(knob_name);
+	if (fkn == 0) {
 		sim_knob_name3.innerText = "NONE";
 		sim_knob_box3.style.opacity = "33%";
-	} else if (fv == 1) {
+	} else if (fkn == 1) {
 		sim_knob_name3.innerText = "DRY";
 		sim_knob_box3.style = "";
-	} else if (fv >= 2) {
-		sim_knob_name3.innerText = regname[fv - 2];
+	} else if (fkn >= 2) {
+		sim_knob_name3.innerText = regname[fkn - 2];
 		sim_knob_box3.style = "";
 	}
 };
 function resetKnobName() {
 	dragging = false;
 	knob_name = 0;
-	sim_knob_name3.innerText = "NONE";
-	sim_knob_box3.style.opacity = "33%";
+	calcKnobName(0);
 };
 sim_knob_name3.addEventListener("dblclick", function (e) {
 	resetKnobName();
@@ -1775,8 +1774,9 @@ sim_knob_name3.addEventListener("pointermove", function (e) {
 	this.setPointerCapture(e.pointerId);
 	this.draggable = false;
 	if(e.buttons) {
-		dragging = true;calcKnobName(knob_name, e.movementY);
-		onSelectChanged({selectName:"knob_name", selectValue:fv});
+		dragging = true;
+		calcKnobName(e.movementY);
+		onSelectChanged({selectName:"knob_name", selectValue:fkn});
 	} else {
 		dragging = false;
 	}
@@ -1967,7 +1967,7 @@ sys_mute.addEventListener("click", function() {
 		onToggleChanged({toggleName:"sys_mute", toggleValue:1});
 	}
 });
-mute = true;
+mute = false;
 
 
 const textareaObserver = new ResizeObserver(resizeOverlay);
@@ -3072,40 +3072,24 @@ function onParameterChanged(jsonData){
 		if (jValue > 0.5) {setMute();} else {clearMute();}
 	}
 	else if (parameterName === "pot0_ctrl" && dragging == false) {
-		if (jValue != 0) {
-			knob0value = jValue;
-			sim_knob0_label.innerText = (jValue.toFixed(3) + "").substring(1);
-			sim_knob0_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
-		} else {
-			knob0reset()
-		}
+		if (jValue > 0.998) {knob0value = 1;} else {knob0value = jValue;}
+		calcKnobValue(sim_knob0, knob0value, 0);
 	}
 	else if (parameterName === "pot1_ctrl" && dragging == false) {
-		if (jValue != 0) {
-			knob1value = jValue;
-			sim_knob1_label.innerText = (jValue.toFixed(3) + "").substring(1);
-			sim_knob1_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
-		} else {
-			knob1reset()
-		}
+		if (jValue > 0.998) {knob1value = 1;} else {knob1value = jValue;}
+		calcKnobValue(sim_knob1, knob1value, 0);
 	}
 	else if (parameterName === "pot2_ctrl" && dragging == false) {
-		if (jValue != 0) {
-			knob2value = jValue;
-			sim_knob2_label.innerText = (jValue.toFixed(3) + "").substring(1);
-			sim_knob2_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
-		} else {
-			knob2reset()
-		}
+		if (jValue > 0.998) {knob2value = 1;} else {knob2value = jValue;}
+		calcKnobValue(sim_knob2, knob2value, 0);
 	}
 	else if (parameterName === "pot3_ctrl" && dragging == false) {
-		if (jValue != 0) {
-			knob3value = jValue;
-			sim_knob3_label.innerText = (jValue.toFixed(3) + "").substring(1);
-			sim_knob3_rot.style = "transform: rotate(" + ((jValue.toFixed(3) * 300) -150) + "deg);";
-		} else {
-			knob3reset()
-		}
+		if (jValue > 0.998) {knob3value = 1;} else {knob3value = jValue;}
+		calcKnobValue(sim_knob3, knob3value, 0);
+	}
+	else if (parameterName === "knob_name" && dragging == false) {
+		knob_name = Math.round(jValue);
+		calcKnobName(0);
 	}
 	else if (parameterName === "sys_wf_send" && running == true) {
 		setPlotBar(jsonData.wf0max, jsonData.wf0min,
@@ -3114,20 +3098,20 @@ function onParameterChanged(jsonData){
 			jsonData.wf3max, jsonData.wf3min);
 	}
 	else if (parameterName === "sys_wf0_sel") {
-		reg_sel0 = jValue;
-		regname_label0.innerText = regname[jValue];
+		reg_sel0 = Math.round(jValue);
+		regname_label0.innerText = regname[Math.round(jValue)];
 	}
 	else if (parameterName === "sys_wf1_sel") {
-		reg_sel1 = jValue;
-		regname_label1.innerText = regname[jValue];
+		reg_sel1 = Math.round(jValue);
+		regname_label1.innerText = regname[Math.round(jValue)];
 	}
 	else if (parameterName === "sys_wf2_sel") {
-		reg_sel2 = jValue;
-		regname_label2.innerText = regname[jValue];
+		reg_sel2 = Math.round(jValue);
+		regname_label2.innerText = regname[Math.round(jValue)];
 	}
 	else if (parameterName === "sys_wf3_sel") {
-		reg_sel3 = jValue;
-		regname_label3.innerText = regname[jValue];
+		reg_sel3 = Math.round(jValue);
+		regname_label3.innerText = regname[Math.round(jValue)];
 	}
 	else if (parameterName === "ui_font") {
 		setFont(jsonData.parameterFont);

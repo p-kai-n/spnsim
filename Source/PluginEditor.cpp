@@ -401,6 +401,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         safe_this->parameterChanged("pot1_ctrl", safe_this->valueTreeState.getRawParameterValue("pot1_ctrl")->load());
         safe_this->parameterChanged("pot2_ctrl", safe_this->valueTreeState.getRawParameterValue("pot2_ctrl")->load());
         safe_this->parameterChanged("pot3_ctrl", safe_this->valueTreeState.getRawParameterValue("pot3_ctrl")->load());
+        safe_this->parameterChanged("knob_name", safe_this->valueTreeState.getRawParameterValue("knob_name")->load());
         safe_this->parameterChanged("sys_bypass", safe_this->valueTreeState.getRawParameterValue("sys_bypass")->load());
         safe_this->parameterChanged("sys_mute", safe_this->valueTreeState.getRawParameterValue("sys_mute")->load());
         safe_this->parameterChanged("sys_wf_send", safe_this->valueTreeState.getRawParameterValue("sys_wf_send")->load());
@@ -445,6 +446,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     valueTreeState.addParameterListener("pot1_ctrl", this);
     valueTreeState.addParameterListener("pot2_ctrl", this);
     valueTreeState.addParameterListener("pot3_ctrl", this);
+    valueTreeState.addParameterListener("knob_name", this);
     valueTreeState.addParameterListener("sys_bypass", this);
     valueTreeState.addParameterListener("sys_mute", this);
     valueTreeState.addParameterListener("sys_wf_send", this);
@@ -471,6 +473,7 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
     valueTreeState.removeParameterListener("pot1_ctrl", this);
     valueTreeState.removeParameterListener("pot2_ctrl", this);
     valueTreeState.removeParameterListener("pot3_ctrl", this);
+    valueTreeState.removeParameterListener("knob_name", this);
     valueTreeState.removeParameterListener("sys_bypass", this);
     valueTreeState.removeParameterListener("sys_mute", this);
     valueTreeState.removeParameterListener("sys_wf_send", this);
@@ -535,6 +538,12 @@ void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& param
     }
     else if (parameterID == "pot3_ctrl") {
         json->setProperty("parameterName", "pot3_ctrl");
+        json->setProperty("parameterValue", newValue);
+        const auto js_args_json = juce::JSON::toString(json.get());
+        javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
+    }
+    else if (parameterID == "knob_name") {
+        json->setProperty("parameterName", "knob_name");
         json->setProperty("parameterValue", newValue);
         const auto js_args_json = juce::JSON::toString(json.get());
         javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
