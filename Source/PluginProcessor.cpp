@@ -872,7 +872,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
 
         //get waveform
-        if (resampling == false || samplesIdx <= inBuffLength3d) {
+        if (resampling == false || samplesIdx < inBuffLength3d) {
             if (buffMax00 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
                 buffMax00 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
             }
@@ -897,7 +897,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             if (buffMin30 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
                 buffMin30 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
             }
-        } else if (samplesIdx <= inBuffLength3d * 2) {
+        } else if (samplesIdx < inBuffLength3d * 2) {
             if (buffMax01 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
                 buffMax01 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
             }
