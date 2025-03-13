@@ -193,14 +193,14 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     //previousGain = *sys_ingain;
 
     lInput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 360, juce::dsp::WindowingFunction<float>::blackman);
     rInput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 360, juce::dsp::WindowingFunction<float>::blackman);
 
     lOutput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 360, juce::dsp::WindowingFunction<float>::blackman);
     rOutput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 360, juce::dsp::WindowingFunction<float>::blackman);
 
 }
 
