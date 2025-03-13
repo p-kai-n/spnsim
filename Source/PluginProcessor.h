@@ -495,7 +495,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState> parameters;
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    //float previousGain;
 
     juce::String ui_font;
     juce::File sys_file;
@@ -504,9 +503,9 @@ private:
     unsigned __int8 sys_running;
     
     const int bm = 8191;
-    std::array<float, 8192> lInput_dup;
+    std::array<float, 8192> lInput_dup;//should set bigger array length to support long block size
     std::array<float, 8192> rInput_dup;
-    std::array<float, 8192> lInput_buff2x;//should set bigger array length to support long block size
+    std::array<float, 8192> lInput_buff2x;
     std::array<float, 8192> rInput_buff2x;
     std::array<float, 8192> lInput_buff2x3d;
     std::array<float, 8192> rInput_buff2x3d;
@@ -518,6 +517,7 @@ private:
     std::array<float, 8192> rOutput_prev;
     unsigned __int8 buffCounter;
     unsigned __int16 inBuffLength;
+    unsigned __int16 inBuffLength3d;
 
     juce::dsp::FIR::Filter<float> lInput_usLPF;
     juce::dsp::FIR::Filter<float> rInput_usLPF;
@@ -528,8 +528,6 @@ private:
     std::array<int, 384> sim_op;
     std::array<int, 32> reg;
     std::array<int, 32768> dram;
-
-    //std::atomic<float>* phase = nullptr;
 
     const int max = 8388608;
     const double min = 1.192092895507813e-7;
@@ -628,6 +626,33 @@ private:
     float buffMin22;
     float buffMax32;
     float buffMin32;
+
+    float buffMax00_prev;
+    float buffMin00_prev;
+    float buffMax10_prev;
+    float buffMin10_prev;
+    float buffMax20_prev;
+    float buffMin20_prev;
+    float buffMax30_prev;
+    float buffMin30_prev;
+
+    float buffMax01_prev;
+    float buffMin01_prev;
+    float buffMax11_prev;
+    float buffMin11_prev;
+    float buffMax21_prev;
+    float buffMin21_prev;
+    float buffMax31_prev;
+    float buffMin31_prev;
+
+    float buffMax02_prev;
+    float buffMin02_prev;
+    float buffMax12_prev;
+    float buffMin12_prev;
+    float buffMax22_prev;
+    float buffMin22_prev;
+    float buffMax32_prev;
+    float buffMin32_prev;
 
     float sys_wf0_max;
     float sys_wf0_min;

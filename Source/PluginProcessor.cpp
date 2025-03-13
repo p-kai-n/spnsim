@@ -14,8 +14,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        )
 {
     parameters = std::make_unique<juce::AudioProcessorValueTreeState>(*this, nullptr, juce::Identifier ("APVTS"), createParameterLayout());
-    
-    //phase = parameters->getRawParameterValue("invertPhase");
+
     sys_ingain = parameters->getRawParameterValue("sys_ingain");
     sys_outgain = parameters->getRawParameterValue("sys_outgain");
 
@@ -91,6 +90,33 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     buffMin22 = 1.0f;
     buffMax32 = -1.0f;
     buffMin32 = 1.0f;
+
+    buffMax00_prev = -1.0f;
+    buffMin00_prev = 1.0f;
+    buffMax10_prev = -1.0f;
+    buffMin10_prev = 1.0f;
+    buffMax20_prev = -1.0f;
+    buffMin20_prev = 1.0f;
+    buffMax30_prev = -1.0f;
+    buffMin30_prev = 1.0f;
+
+    buffMax01_prev = -1.0f;
+    buffMin01_prev = 1.0f;
+    buffMax11_prev = -1.0f;
+    buffMin11_prev = 1.0f;
+    buffMax21_prev = -1.0f;
+    buffMin21_prev = 1.0f;
+    buffMax31_prev = -1.0f;
+    buffMin31_prev = 1.0f;
+
+    buffMax02_prev = -1.0f;
+    buffMin02_prev = 1.0f;
+    buffMax12_prev = -1.0f;
+    buffMin12_prev = 1.0f;
+    buffMax22_prev = -1.0f;
+    buffMin22_prev = 1.0f;
+    buffMax32_prev = -1.0f;
+    buffMin32_prev = 1.0f;
 
     pacc_temp = 0;
     dram_pre = 0;
@@ -190,7 +216,6 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     sys_bypassSm.setCurrentAndTargetValue(*sys_bypass);
     sys_muteSm.reset(sampleRate, 0.01);
     sys_muteSm.setCurrentAndTargetValue(*sys_mute);
-    //previousGain = *sys_ingain;
 
     lInput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
     (10000.0f, sampleRate, 360, juce::dsp::WindowingFunction<float>::blackman);
@@ -251,19 +276,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    /*
-    auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
-    auto currentGain = *sys_ingainParameter * phase;
-
-    if (juce::approximatelyEqual (currentGain, previousGain))
-    {
-        buffer.applyGain (currentGain);
-    }
-    else
-    {
-        buffer.applyGainRamp (0, buffer.getNumSamples(), previousGain, currentGain);
-        previousGain = currentGain;
-    }*/
 
     auto* lInput = buffer.getReadPointer(0);
     auto* rInput = buffer.getReadPointer(1);
@@ -287,6 +299,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         lOutput_buff3x.fill(0.0f);
         rOutput_buff3x.fill(0.0f);
         inBuffLength = 0;
+        inBuffLength3d = 0;
 
         buffMax00 = -1.0f;
         buffMin00 = 1.0f;
@@ -318,7 +331,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         pacc_temp = 0;
         dram_pre = 0;
     }
-        
+
     updateParameters();
 
     if (sys_running > 0) {
@@ -356,6 +369,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 lInput_buff2x3d[std::clamp(samplesIdx, 0, bm)] = float(lInput_buff2x[std::clamp(samplesIdx * 3, 0, bm)]);
                 rInput_buff2x3d[std::clamp(samplesIdx, 0, bm)] = float(rInput_buff2x[std::clamp(samplesIdx * 3, 0, bm)]);
                 inBuffLength++;
+            }
+            for (int i = 0; i < inBuffLength; i += 3) {
+                inBuffLength3d++;
             }
         }
         inBuffLength = unsigned __int16(std::clamp((int(inBuffLength)), 0, bm));
@@ -856,7 +872,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
 
         //get waveform
-        if (resampling == false || samplesIdx < inBuffLength * 0.33333333) {
+        if (resampling == false || samplesIdx <= inBuffLength3d) {
             if (buffMax00 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
                 buffMax00 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
             }
@@ -881,7 +897,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             if (buffMin30 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
                 buffMin30 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
             }
-        } else if (inBuffLength * 0.66666667) {
+        } else if (samplesIdx <= inBuffLength3d * 2) {
             if (buffMax01 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
                 buffMax01 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
             }
@@ -1010,7 +1026,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         float lDry = 0.0f;
         float rDry = 0.0f;
-        if (int(round(knob_name->load())) == 1) {
+        if (int(round(knob_name->load())) == 1 && sys_running > 0) {
             lDry = lBypass * pot3_ctrlSm.getNextValue();
             rDry = rBypass * pot3_ctrlSm.getNextValue();
         }
@@ -1034,43 +1050,70 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
 
     if (sys_running > 0) {
+    if (resampling == false || buffCounter == 2) {
+        buffMax00_prev = buffMax00;
+        buffMin00_prev = buffMin00;
+        buffMax10_prev = buffMax10;
+        buffMin10_prev = buffMin10;
+        buffMax20_prev = buffMax20;
+        buffMin20_prev = buffMin20;
+        buffMax30_prev = buffMax30;
+        buffMin30_prev = buffMin30;
+
+        buffMax01_prev = buffMax01;
+        buffMin01_prev = buffMin01;
+        buffMax11_prev = buffMax11;
+        buffMin11_prev = buffMin11;
+        buffMax21_prev = buffMax21;
+        buffMin21_prev = buffMin21;
+        buffMax31_prev = buffMax31;
+        buffMin31_prev = buffMin31;
+
+        buffMax02_prev = buffMax02;
+        buffMin02_prev = buffMin02;
+        buffMax12_prev = buffMax12;
+        buffMin12_prev = buffMin12;
+        buffMax22_prev = buffMax22;
+        buffMin22_prev = buffMin22;
+        buffMax32_prev = buffMax32;
+        buffMin32_prev = buffMin32;
+
+        sys_wf0_max = (buffMax00_prev * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin00_prev * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax10_prev * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin10_prev * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax20_prev * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin20_prev * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax30_prev * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin30_prev * 0.5f) + 0.5f;
+    } else if (buffCounter == 0) {
+        sys_wf0_max = (buffMax01_prev * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin01_prev * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax11_prev * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin11_prev * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax21_prev * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin21_prev * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax31_prev * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin31_prev * 0.5f) + 0.5f;
+    } else if (buffCounter == 1) {
+        sys_wf0_max = (buffMax02_prev * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin02_prev * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax12_prev * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin12_prev * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax22_prev * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin22_prev * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax32_prev * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin32_prev * 0.5f) + 0.5f;
+    }
     if (sys_wf_send->load() == 0.0f) {
         getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(1.0f);
     } else {
         getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(0.0f);
     }
-    if (resampling == false || buffCounter == 0) {
-        sys_wf0_max = (buffMax00 * 0.5f) + 0.5f;
-        sys_wf0_min = (buffMin00 * 0.5f) + 0.5f;
-        sys_wf1_max = (buffMax10 * 0.5f) + 0.5f;
-        sys_wf1_min = (buffMin10 * 0.5f) + 0.5f;
-        sys_wf2_max = (buffMax20 * 0.5f) + 0.5f;
-        sys_wf2_min = (buffMin20 * 0.5f) + 0.5f;
-        sys_wf3_max = (buffMax30 * 0.5f) + 0.5f;
-        sys_wf3_min = (buffMin30 * 0.5f) + 0.5f;
-    } else if (buffCounter == 1) {
-        sys_wf0_max = (buffMax01 * 0.5f) + 0.5f;
-        sys_wf0_min = (buffMin01 * 0.5f) + 0.5f;
-        sys_wf1_max = (buffMax11 * 0.5f) + 0.5f;
-        sys_wf1_min = (buffMin11 * 0.5f) + 0.5f;
-        sys_wf2_max = (buffMax21 * 0.5f) + 0.5f;
-        sys_wf2_min = (buffMin21 * 0.5f) + 0.5f;
-        sys_wf3_max = (buffMax31 * 0.5f) + 0.5f;
-        sys_wf3_min = (buffMin31 * 0.5f) + 0.5f;
-    } else if (buffCounter == 1) {
-        sys_wf0_max = (buffMax02 * 0.5f) + 0.5f;
-        sys_wf0_min = (buffMin02 * 0.5f) + 0.5f;
-        sys_wf1_max = (buffMax12 * 0.5f) + 0.5f;
-        sys_wf1_min = (buffMin12 * 0.5f) + 0.5f;
-        sys_wf2_max = (buffMax22 * 0.5f) + 0.5f;
-        sys_wf2_min = (buffMin22 * 0.5f) + 0.5f;
-        sys_wf3_max = (buffMax32 * 0.5f) + 0.5f;
-        sys_wf3_min = (buffMin32 * 0.5f) + 0.5f;
-    }
     }
 
 
-    if (sys_rs->load() != 0.0f) {
+    if (resampling == true) {
         if (buffCounter == 0) {
             buffCounter = 1;
         } else if (buffCounter == 1) {
@@ -1132,7 +1175,6 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 
 juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameterLayout()
 {
-    // It will move should not const.
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "sys_ingain", 1 },
         "Input Gain", juce::NormalisableRange<float>(0.0f, 100.0f), 48.0f));
@@ -1177,10 +1219,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "sys_rs", 1 },
         "Resampling", juce::NormalisableRange<float>(0.0f, 1.0f), 1.0f));
-    
-/*  parameters.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{ "invertPhase", 1 },
-        "Invert Phase",
-        false));*/
     return juce::AudioProcessorValueTreeState::ParameterLayout{ parameters.begin(), parameters.end() };
 }
 

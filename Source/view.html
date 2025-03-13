@@ -1387,8 +1387,6 @@ regname[44] = "RMP0_RANGE";
 regname[45] = "RMP1_RATE";
 regname[46] = "RMP1_RANGE";
 regname[47] = "ADDR_PTR";
-//regname[48] = "ACC";
-//regname[49] = "LR";
 
 const condname = [];
 condname[0] = "NEG";
@@ -1591,7 +1589,6 @@ function run() {
 		insts = getInstructions(lines);
 		opcodes = getOpCode(replaceMemEqu(insts.slice()));
 
-		//insts = replaceMemEqu(getInstructions(getLines(codeeditor.value)));
 		if (opcodes != "w") {
 			if (insts != 0) {
 				running = true;
@@ -3077,12 +3074,10 @@ function onParameterChanged(jsonData){
 	const jValue = jsonData.parameterValue;
 
 	if (parameterName === "sys_ingain") {
-		//console.log('sys_ingain: ', jValue);
 		sys_ingain.value = jValue;
 		sys_ingainLabel.innerText = getLabelValue((jValue - decibelMin).toFixed(1));
 	}
 	else if (parameterName === "sys_outgain") {
-		//console.log('sys_outgain: ', jValue);
 		sys_outgain.value = jValue;
 		sys_outgainLabel.innerText = getLabelValue((jValue - decibelMin).toFixed(1));
 	}

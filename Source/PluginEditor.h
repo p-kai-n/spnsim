@@ -94,40 +94,8 @@ private:
 
     virtual void parameterChanged(const juce::String& parameterID, float newValue) override;
 
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
-    /*
-    typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
-    typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
-    */
     juce::AudioProcessorValueTreeState& valueTreeState;
-    /*
-    juce::Slider sys_ingainSlider;
-    std::unique_ptr<SliderAttachment> sys_ingainAttachment;
-    juce::Slider sys_outgainSlider;
-    std::unique_ptr<SliderAttachment> sys_outgainAttachment;
-
-    juce::Slider pot0_ctrlSlider;
-    std::unique_ptr<SliderAttachment> pot0_ctrlAttachment;
-    juce::Slider pot1_ctrlSlider;
-    std::unique_ptr<SliderAttachment> pot1_ctrlAttachment;
-    juce::Slider pot2_ctrlSlider;
-    std::unique_ptr<SliderAttachment> pot2_ctrlAttachment;
-    juce::Slider pot3_ctrlSlider;
-    std::unique_ptr<SliderAttachment> pot3_ctrlAttachment;
-
-    juce::Slider sys_bypassSlider;
-    std::unique_ptr<SliderAttachment> sys_bypassAttachment;
-    juce::Slider sys_muteSlider;
-    std::unique_ptr<SliderAttachment> sys_muteAttachment;
-
-    juce::Slider sys_wf_sendSlider;
-    std::unique_ptr<SliderAttachment> sys_wf_sendAttachment;
- 
-    //juce::ToggleButton invertButton;
-    //std::unique_ptr<ButtonAttachment> invertAttachment;
-    */
     std::unique_ptr<choc::ui::WebView> chocWebView;
     std::unique_ptr<juce::Component> juceWebViewHolder;
 

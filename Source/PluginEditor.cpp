@@ -48,34 +48,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     ui_font(font), sys_file(f), sys_edited(e), sys_running(r), sys_code(c), sim_op(op)
 {
     juce::ignoreUnused (processorRef);
-    /*
-    addAndMakeVisible (sys_ingainSlider);
-    sys_ingainAttachment.reset (new SliderAttachment (valueTreeState, "sys_ingain", sys_ingainSlider));
-    addAndMakeVisible(sys_outgainSlider);
-    sys_outgainAttachment.reset(new SliderAttachment(valueTreeState, "sys_outgain", sys_outgainSlider));
-
-    addAndMakeVisible(pot0_ctrlSlider);
-    pot0_ctrlAttachment.reset(new SliderAttachment(valueTreeState, "pot0_ctrl", pot0_ctrlSlider));
-    addAndMakeVisible(pot1_ctrlSlider);
-    pot1_ctrlAttachment.reset(new SliderAttachment(valueTreeState, "pot1_ctrl", pot1_ctrlSlider));
-    addAndMakeVisible(pot2_ctrlSlider);
-    pot2_ctrlAttachment.reset(new SliderAttachment(valueTreeState, "pot2_ctrl", pot2_ctrlSlider));
-    addAndMakeVisible(pot3_ctrlSlider);
-    pot3_ctrlAttachment.reset(new SliderAttachment(valueTreeState, "pot3_ctrl", pot3_ctrlSlider));
-
-    addAndMakeVisible(sys_bypassSlider);
-    sys_bypassAttachment.reset(new SliderAttachment(valueTreeState, "sys_bypass", sys_bypassSlider));
-    addAndMakeVisible(sys_muteSlider);
-    sys_muteAttachment.reset(new SliderAttachment(valueTreeState, "sys_mute", sys_muteSlider));
-
-    addAndMakeVisible(sys_wf_sendSlider);
-    sys_wf_sendAttachment.reset(new SliderAttachment(valueTreeState, "sys_wf_send", sys_wf_sendSlider));
-    
-    invertButton.setButtonText ("Invert Phase");
-    addAndMakeVisible (invertButton);
-    invertAttachment.reset (new ButtonAttachment (valueTreeState, "invertPhase", invertButton));
-    */
-    // Create webview.
     choc::ui::WebView::Options options;
 
 #if JUCE_DEBUG
@@ -108,7 +80,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         if (safe_this.getComponent() == nullptr) {return choc::value::Value(-1);}
         const auto choc_json_string = choc::json::toString(args);
         const auto juce_json = juce::JSON::parse(choc_json_string);
-        //juce::Logger::outputDebugString(choc_json_string);
 
         if (juce_json[0]["sliderName"] == "sys_ingain") {
             safe_this->valueTreeState.getParameter("sys_ingain")->setValueNotifyingHost((float)juce_json[0]["sliderValue"] * 0.01f);
@@ -164,7 +135,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         const auto juce_json = juce::JSON::parse(choc_json_string);
 
         const juce::String text = juce_json[0]["textContent"];
-        //DBG(juce::String("text_changed"));
 
         if (juce_json[0]["textName"] == "edited") {
             safe_this->sys_edited = text;
@@ -392,7 +362,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     };
 
     auto web_view_callback_on_initial_update =
-        [safe_this = juce::Component::SafePointer(this)](const choc::value::ValueView/*& args*/) -> choc::value::Value {
+        [safe_this = juce::Component::SafePointer(this)](const choc::value::ValueView) -> choc::value::Value {
         if (safe_this.getComponent() == nullptr) {return choc::value::Value(-1);}
 
         safe_this->parameterChanged("sys_ingain", safe_this->valueTreeState.getRawParameterValue("sys_ingain")->load());
@@ -417,7 +387,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         safe_this->parameterChanged("ui_font", 0.0f);
         safe_this->parameterChanged("sys_loadfile", 0.0f);
         safe_this->parameterChanged("sys_running", 0.0f);
-        //safe_this->parameterChanged("invertPhase", safe_this->valueTreeState.getRawParameterValue("invertPhase")->load());
 
         return choc::value::Value(0);
     };
@@ -450,7 +419,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     valueTreeState.addParameterListener("sys_bypass", this);
     valueTreeState.addParameterListener("sys_mute", this);
     valueTreeState.addParameterListener("sys_wf_send", this);
-    //valueTreeState.addParameterListener("invertPhase", this);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -477,7 +445,6 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
     valueTreeState.removeParameterListener("sys_bypass", this);
     valueTreeState.removeParameterListener("sys_mute", this);
     valueTreeState.removeParameterListener("sys_wf_send", this);
-    //valueTreeState.removeParameterListener("invertPhase", this);
 }
 
 //==============================================================================
