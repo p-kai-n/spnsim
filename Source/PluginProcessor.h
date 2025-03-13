@@ -503,16 +503,21 @@ private:
     juce::String sys_code;
     unsigned __int8 sys_running;
     
-    const int bm = 4095;
-    std::array<float, 4096> lInput_buff2x;//should set bigger array length to support long block size
-    std::array<float, 4096> rInput_buff2x;
-    std::array<float, 4096> lInput_buff2x3d;
-    std::array<float, 4096> rInput_buff2x3d;
-
-    std::array<float, 4096> lOutput_buff;
-    std::array<float, 4096> rOutput_buff;
-    std::array<float, 4096> lOutput_buff3x;
-    std::array<float, 4096> rOutput_buff3x;
+    const int bm = 8191;
+    std::array<float, 8192> lInput_dup;
+    std::array<float, 8192> rInput_dup;
+    std::array<float, 8192> lInput_buff2x;//should set bigger array length to support long block size
+    std::array<float, 8192> rInput_buff2x;
+    std::array<float, 8192> lInput_buff2x3d;
+    std::array<float, 8192> rInput_buff2x3d;
+    std::array<float, 8192> lOutput_buff;
+    std::array<float, 8192> rOutput_buff;
+    std::array<float, 8192> lOutput_buff3x;
+    std::array<float, 8192> rOutput_buff3x;
+    std::array<float, 8192> lOutput_prev;
+    std::array<float, 8192> rOutput_prev;
+    unsigned __int8 buffCounter;
+    unsigned __int16 inBuffLength;
 
     juce::dsp::FIR::Filter<float> lInput_usLPF;
     juce::dsp::FIR::Filter<float> rInput_usLPF;
@@ -560,42 +565,6 @@ private:
     std::atomic<float>* pot2_ctrl = nullptr;
     std::atomic<float>* pot3_ctrl = nullptr;
 
-    float sys_wf0_max;
-    float sys_wf0_min;
-    float sys_wf1_max;
-    float sys_wf1_min;
-    float sys_wf2_max;
-    float sys_wf2_min;
-    float sys_wf3_max;
-    float sys_wf3_min;
-
-    float sin0lfo;
-    float cos0lfo;
-    float sin1lfo;
-    float cos1lfo;
-    float rmp0lfo;
-    float rmp0sublfo;
-    float rmp0tplfo;
-    float rmp1lfo;
-    float rmp1sublfo;
-    float rmp1tplfo;
-
-    float sin0deg;
-    float sin1deg;
-    float rmp0inc;
-    float rmp0subinc;
-    float rmp1inc;
-    float rmp1subinc;
-
-    bool sin0use;
-    bool sin1use;
-    bool rmp0use;
-    bool rmp1use;
-
-    int acc;
-    int pacc;
-    double logvalue;
-
     int sin0_rate;
     int sin0_rate_;
     int sin0_range;
@@ -633,7 +602,71 @@ private:
     int addr_ptr;
     int addr_ptr_;
 
+    float buffMax00;
+    float buffMin00;
+    float buffMax10;
+    float buffMin10;
+    float buffMax20;
+    float buffMin20;
+    float buffMax30;
+    float buffMin30;
+
+    float buffMax01;
+    float buffMin01;
+    float buffMax11;
+    float buffMin11;
+    float buffMax21;
+    float buffMin21;
+    float buffMax31;
+    float buffMin31;
+
+    float buffMax02;
+    float buffMin02;
+    float buffMax12;
+    float buffMin12;
+    float buffMax22;
+    float buffMin22;
+    float buffMax32;
+    float buffMin32;
+
+    float sys_wf0_max;
+    float sys_wf0_min;
+    float sys_wf1_max;
+    float sys_wf1_min;
+    float sys_wf2_max;
+    float sys_wf2_min;
+    float sys_wf3_max;
+    float sys_wf3_min;
+
+    float sin0lfo;
+    float cos0lfo;
+    float sin1lfo;
+    float cos1lfo;
+    float rmp0lfo;
+    float rmp0sublfo;
+    float rmp0tplfo;
+    float rmp1lfo;
+    float rmp1sublfo;
+    float rmp1tplfo;
+
+    float sin0deg;
+    float sin1deg;
+    float rmp0inc;
+    float rmp0subinc;
+    float rmp1inc;
+    float rmp1subinc;
+
+    bool sin0use;
+    bool sin1use;
+    bool rmp0use;
+    bool rmp1use;
+
+    int acc;
+    int pacc;
+    int pacc_temp;
     int last_rda;
+    double logvalue;
+    int dram_pre;
     unsigned __int16 cho_reg;
     unsigned __int16 dram_base;
 

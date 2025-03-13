@@ -47,18 +47,53 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     sys_code = "";
     sys_running = 0;
 
+    lInput_dup.fill(0.0f);
+    rInput_dup.fill(0.0f);
     lInput_buff2x.fill(0.0f);
     rInput_buff2x.fill(0.0f);
     lInput_buff2x3d.fill(0.0f);
     rInput_buff2x3d.fill(0.0f);
-
     lOutput_buff.fill(0.0f);
     rOutput_buff.fill(0.0f);
     lOutput_buff3x.fill(0.0f);
     rOutput_buff3x.fill(0.0f);
+    lOutput_prev.fill(0.0f);
+    rOutput_prev.fill(0.0f);
+    buffCounter = 0;
+    inBuffLength = 0;
 
     sim_op.fill(0);
     resetRegisters();
+
+    buffMax00 = -1.0f;
+    buffMin00 = 1.0f;
+    buffMax10 = -1.0f;
+    buffMin10 = 1.0f;
+    buffMax20 = -1.0f;
+    buffMin20 = 1.0f;
+    buffMax30 = -1.0f;
+    buffMin30 = 1.0f;
+
+    buffMax01 = -1.0f;
+    buffMin01 = 1.0f;
+    buffMax11 = -1.0f;
+    buffMin11 = 1.0f;
+    buffMax21 = -1.0f;
+    buffMin21 = 1.0f;
+    buffMax31 = -1.0f;
+    buffMin31 = 1.0f;
+
+    buffMax02 = -1.0f;
+    buffMin02 = 1.0f;
+    buffMax12 = -1.0f;
+    buffMin12 = 1.0f;
+    buffMax22 = -1.0f;
+    buffMin22 = 1.0f;
+    buffMax32 = -1.0f;
+    buffMin32 = 1.0f;
+
+    pacc_temp = 0;
+    dram_pre = 0;
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -158,14 +193,14 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     //previousGain = *sys_ingain;
 
     lInput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 512, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
     rInput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 512, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
 
     lOutput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 512, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
     rOutput_usLPF = juce::dsp::FilterDesign<float>::designFIRLowpassWindowMethod
-    (10000.0f, sampleRate, 512, juce::dsp::WindowingFunction<float>::blackman);
+    (10000.0f, sampleRate, 320, juce::dsp::WindowingFunction<float>::blackman);
 
 }
 
@@ -235,70 +270,109 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto* lOutput = buffer.getWritePointer(0);
     auto* rOutput = buffer.getWritePointer(1);
     auto buffLength = buffer.getNumSamples();
-    unsigned __int16 inBuffLength = 0;
+    float ingain;
+    bool resampling;
+    if (sys_rs->load() == 0.0f) {
+        resampling = false;
+    } else {
+        resampling = true;
+    }
+    if (resampling == false || buffCounter == 2) {
+        lInput_buff2x.fill(0.0f);
+        rInput_buff2x.fill(0.0f);
+        lInput_buff2x3d.fill(0.0f);
+        rInput_buff2x3d.fill(0.0f);
+        lOutput_buff.fill(0.0f);
+        rOutput_buff.fill(0.0f);
+        lOutput_buff3x.fill(0.0f);
+        rOutput_buff3x.fill(0.0f);
+        inBuffLength = 0;
 
-    float buffMax0 = -1.0f;
-    float buffMin0 = 1.0f;
-    float buffMax1 = -1.0f;
-    float buffMin1 = 1.0f;
-    float buffMax2 = -1.0f;
-    float buffMin2 = 1.0f;
-    float buffMax3 = -1.0f;
-    float buffMin3 = 1.0f;
-    int dram_pre = 0;
-    int pacc_temp = 0;
+        buffMax00 = -1.0f;
+        buffMin00 = 1.0f;
+        buffMax10 = -1.0f;
+        buffMin10 = 1.0f;
+        buffMax20 = -1.0f;
+        buffMin20 = 1.0f;
+        buffMax30 = -1.0f;
+        buffMin30 = 1.0f;
 
-    lInput_buff2x.fill(0.0f);
-    rInput_buff2x.fill(0.0f);
-    lInput_buff2x3d.fill(0.0f);
-    rInput_buff2x3d.fill(0.0f);
-    lOutput_buff.fill(0.0f);
-    rOutput_buff.fill(0.0f);
-    lOutput_buff3x.fill(0.0f);
-    rOutput_buff3x.fill(0.0f);
+        buffMax01 = -1.0f;
+        buffMin01 = 1.0f;
+        buffMax11 = -1.0f;
+        buffMin11 = 1.0f;
+        buffMax21 = -1.0f;
+        buffMin21 = 1.0f;
+        buffMax31 = -1.0f;
+        buffMin31 = 1.0f;
 
+        buffMax02 = -1.0f;
+        buffMin02 = 1.0f;
+        buffMax12 = -1.0f;
+        buffMin12 = 1.0f;
+        buffMax22 = -1.0f;
+        buffMin22 = 1.0f;
+        buffMax32 = -1.0f;
+        buffMin32 = 1.0f;
+
+        pacc_temp = 0;
+        dram_pre = 0;
+    }
+        
     updateParameters();
 
     if (sys_running > 0) {
-    if (sys_rs->load() != 0.0f) {
-        for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
-            auto ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
-            lInput_buff2x[std::clamp((samplesIdx * 2), 0, bm)] = lInput[samplesIdx] * ingain;
-            rInput_buff2x[std::clamp((samplesIdx * 2), 0, bm)] = rInput[samplesIdx] * ingain;
-        }
-        for (int samplesIdx = 0; samplesIdx < buffLength * 2; samplesIdx++) {
-            lInput_buff2x[std::clamp((samplesIdx), 0, bm)] = lInput_usLPF.processSample(lInput_buff2x[std::clamp((samplesIdx), 0, bm)]);
-            rInput_buff2x[std::clamp((samplesIdx), 0, bm)] = rInput_usLPF.processSample(rInput_buff2x[std::clamp((samplesIdx), 0, bm)]);
-        }
-        for (int samplesIdx = 0; samplesIdx * 3 < buffLength * 2; samplesIdx++) {
-            lInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = float(lInput_buff2x[std::clamp((samplesIdx * 3), 0, bm)] * 2.0);
-            rInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = float(rInput_buff2x[std::clamp((samplesIdx * 3), 0, bm)] * 2.0);
-            inBuffLength++;
+    if (resampling == true) {
+        if (buffCounter == 0) {
+            lInput_dup.fill(0.0f);
+            rInput_dup.fill(0.0f);
+            for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
+                ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
+                lInput_dup[std::clamp((buffLength * 0) + samplesIdx, 0, bm)] = lInput[samplesIdx] * ingain;
+                rInput_dup[std::clamp((buffLength * 0) + samplesIdx, 0, bm)] = rInput[samplesIdx] * ingain;
+            }
+        } else if (buffCounter == 1) {
+            for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
+                ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
+                lInput_dup[std::clamp((buffLength * 1) + samplesIdx, 0, bm)] = lInput[samplesIdx] * ingain;
+                rInput_dup[std::clamp((buffLength * 1) + samplesIdx, 0, bm)] = rInput[samplesIdx] * ingain;
+            }
+        } else {
+            for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
+                ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
+                lInput_dup[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] = lInput[samplesIdx] * ingain;
+                rInput_dup[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] = rInput[samplesIdx] * ingain;
+            }
+
+            for (int samplesIdx = 0; samplesIdx < buffLength * 3; samplesIdx++) {
+                lInput_buff2x[std::clamp(samplesIdx * 2, 0, bm)] = lInput_dup[std::clamp(samplesIdx, 0, bm)];
+                rInput_buff2x[std::clamp(samplesIdx * 2, 0, bm)] = rInput_dup[std::clamp(samplesIdx, 0, bm)];
+            }
+            for (int samplesIdx = 0; samplesIdx < buffLength * 6; samplesIdx++) {
+                lInput_buff2x[std::clamp(samplesIdx, 0, bm)] = lInput_usLPF.processSample(lInput_buff2x[std::clamp(samplesIdx, 0, bm)]) * 2.0f;
+                rInput_buff2x[std::clamp(samplesIdx, 0, bm)] = rInput_usLPF.processSample(rInput_buff2x[std::clamp(samplesIdx, 0, bm)]) * 2.0f;
+            }
+            for (int samplesIdx = 0; samplesIdx * 3 < buffLength * 6; samplesIdx++) {
+                lInput_buff2x3d[std::clamp(samplesIdx, 0, bm)] = float(lInput_buff2x[std::clamp(samplesIdx * 3, 0, bm)]);
+                rInput_buff2x3d[std::clamp(samplesIdx, 0, bm)] = float(rInput_buff2x[std::clamp(samplesIdx * 3, 0, bm)]);
+                inBuffLength++;
+            }
         }
         inBuffLength = unsigned __int16(std::clamp((int(inBuffLength)), 0, bm));
     } else {
         for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
-            auto ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
+            ingain = juce::Decibels::decibelsToGain(sys_ingainSm.getNextValue() - 48.0f, -48.0f);
             lInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = lInput[samplesIdx] * ingain;
             rInput_buff2x3d[std::clamp((samplesIdx), 0, bm)] = rInput[samplesIdx] * ingain;
         }
         inBuffLength = unsigned __int16(std::clamp(buffLength, 0, bm));
     }
 
+    if (resampling == false || buffCounter == 2) {
     for (int samplesIdx = 0; samplesIdx < inBuffLength; samplesIdx++) {
         //input and limitting
-        adcl = max;
-        adcr = max;
-        if (lInput_buff2x3d[samplesIdx] <= -1.0f) {
-            adcl = -max;
-        } else if (lInput_buff2x3d[samplesIdx] <= 1.0f) {
-            adcl = int(adcl * lInput_buff2x3d[samplesIdx]);
-        }
-        if (rInput_buff2x3d[samplesIdx] <= -1.0f) {
-            adcr = -max;
-        } else if (rInput_buff2x3d[samplesIdx] <= 1.0f) {
-            adcr = int(adcr * rInput_buff2x3d[samplesIdx]);
-        }
+        adcl = std::clamp(int(max * lInput_buff2x3d[samplesIdx]), -max, max);
+        adcr = std::clamp(int(max * rInput_buff2x3d[samplesIdx]), -max, max);
 
         //update user reg from system reg
         pot0 = int(max * pot0_ctrlSm.getNextValue());
@@ -782,32 +856,81 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
 
         //get waveform
-        if (buffMax0 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
-            buffMax0 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
-        }
-        if (buffMin0 > float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
-            buffMin0 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
-        }
-        
-        if (buffMax1 < float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
-            buffMax1 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
-        }
-        if (buffMin1 > float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
-            buffMin1 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
-        }
-
-        if (buffMax2 < float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
-            buffMax2 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
-        }
-        if (buffMin2 > float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
-            buffMin2 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
-        }
-        
-        if (buffMax3 < float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
-            buffMax3 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
-        }
-        if (buffMin3 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
-            buffMin3 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+        if (resampling == false || samplesIdx < inBuffLength * 0.33333333) {
+            if (buffMax00 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMax00 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin00 > float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMin00 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax10 < float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMax10 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin10 > float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMin10 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax20 < float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMax20 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin20 > float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMin20 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax30 < float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMax30 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin30 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMin30 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
+        } else if (inBuffLength * 0.66666667) {
+            if (buffMax01 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMax01 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin01 > float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMin01 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax11 < float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMax11 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin11 > float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMin11 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax21 < float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMax21 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin21 > float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMin21 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax31 < float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMax31 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin31 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMin31 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
+        } else {
+            if (buffMax02 < float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMax02 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin02 > float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min)) {
+                buffMin02 = float(getRegister(std::clamp(int(round(sys_wf0_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax12 < float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMax12 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin12 > float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min)) {
+                buffMin12 = float(getRegister(std::clamp(int(round(sys_wf1_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax22 < float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMax22 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin22 > float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min)) {
+                buffMin22 = float(getRegister(std::clamp(int(round(sys_wf2_sel->load())), 0, 47)) * min);
+            }
+            if (buffMax32 < float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMax32 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
+            if (buffMin32 > float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min)) {
+                buffMin32 = float(getRegister(std::clamp(int(round(sys_wf3_sel->load())), 0, 47)) * min);
+            }
         }
 
         //output and limitting
@@ -824,15 +947,20 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             rOutput_buff[samplesIdx] = -1;
         }
     }
+    }
 
-    if (sys_rs->load() != 0.0f) {
-        for (int samplesIdx = 0; samplesIdx < inBuffLength; samplesIdx++) {
-            lOutput_buff3x[std::clamp((samplesIdx * 3), 0, bm)] = lOutput_buff[std::clamp((samplesIdx), 0, bm)];
-            rOutput_buff3x[std::clamp((samplesIdx * 3), 0, bm)] = rOutput_buff[std::clamp((samplesIdx), 0, bm)];
-        }
-        for (int samplesIdx = 0; samplesIdx < inBuffLength * 3; samplesIdx++) {
-            lOutput_buff3x[std::clamp((samplesIdx), 0, bm)] = lOutput_usLPF.processSample(lOutput_buff3x[std::clamp((samplesIdx), 0, bm)]);
-            rOutput_buff3x[std::clamp((samplesIdx), 0, bm)] = rOutput_usLPF.processSample(rOutput_buff3x[std::clamp((samplesIdx), 0, bm)]);
+    if (resampling == true) {
+        if (buffCounter == 2) {
+            for (int samplesIdx = 0; samplesIdx < inBuffLength; samplesIdx++) {
+                lOutput_buff3x[std::clamp(samplesIdx * 3, 0, bm)] = lOutput_buff[std::clamp(samplesIdx, 0, bm)];
+                rOutput_buff3x[std::clamp(samplesIdx * 3, 0, bm)] = rOutput_buff[std::clamp(samplesIdx, 0, bm)];
+            }
+            for (int samplesIdx = 0; samplesIdx < inBuffLength * 3; samplesIdx++) {
+                lOutput_buff3x[std::clamp(samplesIdx, 0, bm)] = lOutput_usLPF.processSample(lOutput_buff3x[std::clamp(samplesIdx, 0, bm)]) * 3.0f;
+                rOutput_buff3x[std::clamp(samplesIdx, 0, bm)] = rOutput_usLPF.processSample(rOutput_buff3x[std::clamp(samplesIdx, 0, bm)]) * 3.0f;
+                lOutput_prev[std::clamp(samplesIdx, 0, bm)] = lOutput_buff3x[std::clamp(samplesIdx, 0, bm)];
+                rOutput_prev[std::clamp(samplesIdx, 0, bm)] = rOutput_buff3x[std::clamp(samplesIdx, 0, bm)];
+            }
         }
     }
     } else {
@@ -840,14 +968,35 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         rOutput_buff.fill(0.0f);
         lOutput_buff3x.fill(0.0f);
         rOutput_buff3x.fill(0.0f);
-        buffMax0 = 0.0f;
-        buffMin0 = 0.0f;
-        buffMax1 = 0.0f;
-        buffMin1 = 0.0f;
-        buffMax2 = 0.0f;
-        buffMin2 = 0.0f;
-        buffMax3 = 0.0f;
-        buffMin3 = 0.0f;
+        lOutput_prev.fill(0.0f);
+        rOutput_prev.fill(0.0f);
+
+        buffMax00 = 0.0f;
+        buffMin00 = 0.0f;
+        buffMax10 = 0.0f;
+        buffMin10 = 0.0f;
+        buffMax20 = 0.0f;
+        buffMin20 = 0.0f;
+        buffMax30 = 0.0f;
+        buffMin30 = 0.0f;
+
+        buffMax01 = 0.0f;
+        buffMin01 = 0.0f;
+        buffMax11 = 0.0f;
+        buffMin11 = 0.0f;
+        buffMax21 = 0.0f;
+        buffMin21 = 0.0f;
+        buffMax31 = 0.0f;
+        buffMin31 = 0.0f;
+
+        buffMax02 = 0.0f;
+        buffMin02 = 0.0f;
+        buffMax12 = 0.0f;
+        buffMin12 = 0.0f;
+        buffMax22 = 0.0f;
+        buffMin22 = 0.0f;
+        buffMax32 = 0.0f;
+        buffMin32 = 0.0f;
     }
 
     for (int samplesIdx = 0; samplesIdx < buffLength; samplesIdx++) {
@@ -866,9 +1015,17 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             rDry = rBypass * pot3_ctrlSm.getNextValue();
         }
 
-        if (sys_rs->load() != 0.0f) {
-            lOutput[samplesIdx] = float((lOutput_buff3x[std::clamp((samplesIdx * 2), 0, bm)] * outgain * 3.0) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
-            rOutput[samplesIdx] = float((rOutput_buff3x[std::clamp((samplesIdx * 2), 0, bm)] * outgain * 3.0) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+        if (resampling == true) {
+            if (buffCounter == 0) {
+                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
+                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+            } else if (buffCounter == 1) {
+                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
+                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+            } else {
+                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 0) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
+                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 0) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+            }
         } else {
             lOutput[samplesIdx] = float((lOutput_buff[std::clamp((samplesIdx), 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
             rOutput[samplesIdx] = float((rOutput_buff[std::clamp((samplesIdx), 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
@@ -882,14 +1039,45 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     } else {
         getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(0.0f);
     }
-    sys_wf0_max = (buffMax0 * 0.5f) + 0.5f;
-    sys_wf0_min = (buffMin0 * 0.5f) + 0.5f;
-    sys_wf1_max = (buffMax1 * 0.5f) + 0.5f;
-    sys_wf1_min = (buffMin1 * 0.5f) + 0.5f;
-    sys_wf2_max = (buffMax2 * 0.5f) + 0.5f;
-    sys_wf2_min = (buffMin2 * 0.5f) + 0.5f;
-    sys_wf3_max = (buffMax3 * 0.5f) + 0.5f;
-    sys_wf3_min = (buffMin3 * 0.5f) + 0.5f;
+    if (resampling == false || buffCounter == 0) {
+        sys_wf0_max = (buffMax00 * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin00 * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax10 * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin10 * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax20 * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin20 * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax30 * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin30 * 0.5f) + 0.5f;
+    } else if (buffCounter == 1) {
+        sys_wf0_max = (buffMax01 * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin01 * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax11 * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin11 * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax21 * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin21 * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax31 * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin31 * 0.5f) + 0.5f;
+    } else if (buffCounter == 1) {
+        sys_wf0_max = (buffMax02 * 0.5f) + 0.5f;
+        sys_wf0_min = (buffMin02 * 0.5f) + 0.5f;
+        sys_wf1_max = (buffMax12 * 0.5f) + 0.5f;
+        sys_wf1_min = (buffMin12 * 0.5f) + 0.5f;
+        sys_wf2_max = (buffMax22 * 0.5f) + 0.5f;
+        sys_wf2_min = (buffMin22 * 0.5f) + 0.5f;
+        sys_wf3_max = (buffMax32 * 0.5f) + 0.5f;
+        sys_wf3_min = (buffMin32 * 0.5f) + 0.5f;
+    }
+    }
+
+
+    if (sys_rs->load() != 0.0f) {
+        if (buffCounter == 0) {
+            buffCounter = 1;
+        } else if (buffCounter == 1) {
+            buffCounter = 2;
+        } else {
+            buffCounter = 0;
+        }
     }
 }
 

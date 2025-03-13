@@ -349,13 +349,15 @@ input[type="checkbox"] {
 	line-height: 10px;
 	opacity: 0;
 	transition: height 0.05s, opacity 0.05s;
+	pointer-events: none;
 }
 #edit_top > * {
-	height: 17px;
+	height: 0px;
 	line-height: 0;
 	color: var(--fg);
 }
 #edit_font {
+	height: 0px;
 	width: calc(100% - 32px);
 	padding-left: 8px;
 	border: none;
@@ -526,24 +528,34 @@ textarea, #ce_overlay, #ce_lines {
 <div id="system_ctrl">
 
 <div class="ctrl_slider ctrl_item">
-	<div class="ctrl_slider_body"><span class="indent">INPUT</span><br><input type="range" min="0" step="0.5" id="sys_ingain" list="markers"></div>
+	<div class="ctrl_slider_body"><span class="indent">INPUT</span><br><input type="range" min="0" step="1" id="sys_ingain" list="markers"></div>
 	<div class="side_label"><span id="sys_ingainLabel">0.0</span></div>
 </div>
 <div class="ctrl_slider ctrl_item">
-	<div class="ctrl_slider_body"><span class="indent">OUTPUT</span><br><input type="range" min="0" step="0.5" id="sys_outgain" list="markers"></div>
+	<div class="ctrl_slider_body"><span class="indent">OUTPUT</span><br><input type="range" min="0" step="1" id="sys_outgain" list="markers"></div>
 	<div class="side_label"><span id="sys_outgainLabel">0.0</span></div>
 </div>
 <datalist id="markers">
 	<option value="60"></option>
+	<option value="57"></option>
 	<option value="54"></option>
+	<option value="51"></option>
 	<option value="48"></option>
+	<option value="45"></option>
 	<option value="42"></option>
+	<option value="39"></option>
 	<option value="36"></option>
+	<option value="33"></option>
 	<option value="30"></option>
+	<option value="27"></option>
 	<option value="24"></option>
+	<option value="21"></option>
 	<option value="18"></option>
+	<option value="15"></option>
 	<option value="12"></option>
+	<option value="9"></option>
 	<option value="6"></option>
+	<option value="3"></option>
 	<option value="0"></option>
 </datalist>
 
@@ -786,9 +798,6 @@ textarea, #ce_overlay, #ce_lines {
 	</div>
 </div>
 </div>
-
-<input id="loader" type="file" style="display:none;" accept=".ttf,.otf,.ttc">
-
 <script>
 const body = document.getElementById("body");
 
@@ -962,7 +971,6 @@ const t_f_open = document.getElementById("t_f_open");
 const t_f_save = document.getElementById("t_f_save");
 const t_f_saveas = document.getElementById("t_f_saveas");
 const t_f_close = document.getElementById("t_f_close");
-const loader = document.getElementById("loader");
 
 const t_view = document.getElementById("t_view");
 const t_v = document.getElementById("t_v");
@@ -1615,6 +1623,7 @@ function run() {
 		onCalled({callName:"running", callArg:0});
 	}
 };
+
 sys_ingain.addEventListener("dblclick", function() {
 	sys_ingain.value = decibelMin;
 	sys_ingainLabel.innerText = getLabelValue((sys_ingain.value - decibelMin).toFixed(1));
@@ -1714,7 +1723,7 @@ function knob3reset() {
 	sim_knob3_rot.style = "transition:transform 0.25s;";
 	onSliderChanged({sliderName:"pot3_ctrl", sliderValue:0});
 };
-sim_knob0.addEventListener("dblclick", function (e) {knob0reset()});
+sim_knob0.addEventListener("dblclick", function (e) {knob0reset();});
 sim_knob0.addEventListener("mousedown", function (e) {sim_knob0_rot.style.transition = "transform 0.0s;";});
 sim_knob0.addEventListener("mouseup", function (e) {dragging = false;});
 sim_knob0.addEventListener("pointermove", function (e) {
@@ -1722,7 +1731,7 @@ sim_knob0.addEventListener("pointermove", function (e) {
 	if(e.buttons) {dragging = true;calcKnobValue(this, knob0value, e.movementY);}
 	else {dragging = false;}
 });
-sim_knob1.addEventListener("dblclick", function (e) {knob1reset()});
+sim_knob1.addEventListener("dblclick", function (e) {knob1reset();});
 sim_knob1.addEventListener("mousedown", function (e) {sim_knob1_rot.style.transition = "transform 0.0s;";});
 sim_knob1.addEventListener("mouseup", function (e) {dragging = false;});
 sim_knob1.addEventListener("pointermove", function (e) {
@@ -1730,7 +1739,7 @@ sim_knob1.addEventListener("pointermove", function (e) {
 	if(e.buttons) {dragging = true;calcKnobValue(this, knob1value, e.movementY);}
 	else {dragging = false;}
 });
-sim_knob2.addEventListener("dblclick", function (e) {knob2reset()});
+sim_knob2.addEventListener("dblclick", function (e) {knob2reset();});
 sim_knob2.addEventListener("mousedown", function (e) {sim_knob2_rot.style.transition = "transform 0.0s;";});
 sim_knob2.addEventListener("mouseup", function (e) {dragging = false;});
 sim_knob2.addEventListener("pointermove", function (e) {
@@ -1738,7 +1747,7 @@ sim_knob2.addEventListener("pointermove", function (e) {
 	if(e.buttons) {dragging = true;calcKnobValue(this, knob2value, e.movementY);}
 	else {dragging = false;}
 });
-sim_knob3.addEventListener("dblclick", function (e) {knob3reset()});
+sim_knob3.addEventListener("dblclick", function (e) {knob3reset();});
 sim_knob3.addEventListener("mousedown", function (e) {sim_knob3_rot.style.transition = "transform 0.0s;";});
 sim_knob3.addEventListener("mouseup", function (e) {dragging = false;});
 sim_knob3.addEventListener("pointermove", function (e) {
@@ -2708,6 +2717,9 @@ function openTt() {
 	show_t_t = true;
 };
 body.addEventListener("mousedown", function () {closeTf();closeTv();closeTt();});
+body.addEventListener("contextmenu", function () {event.preventDefault();});
+codeeditor.addEventListener("contextmenu", function () {event.stopPropagation();});
+
 
 function drawMenuChk(t) {
 	t.innerHTML = 
@@ -2895,6 +2907,8 @@ function showFont() {
 	sf = true;
 	edit_top.style.opacity = "1";
 	edit_top.style.height = "20px";
+	edit_top.style.pointerEvents = "auto";
+	edit_font.style.height = "auto";
 	edit_top.style.borderBottom = "1px solid var(--bd-thin)";
 	edit_area.style.height = "calc(100% - 20px - 20px)";
 	t_v_font_c.style.opacity = "1";
@@ -2903,8 +2917,11 @@ function showFont() {
 function hideFont() {
 	sf = false;
 	edit_top.style = "";
+	edit_font.style = "";
 	edit_area.style.height = "";
 	t_v_font_c.style = "";
+	codeeditor.focus();
+	edit_top.style = "";
 };
 function switchShowFont() {if (sf == false) {showFont();} else {hideFont();}}
 hideFont();
