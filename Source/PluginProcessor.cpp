@@ -1105,11 +1105,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         sys_wf3_max = (buffMax32_prev * 0.5f) + 0.5f;
         sys_wf3_min = (buffMin32_prev * 0.5f) + 0.5f;
     }
-    if (sys_wf_send->load() == 0.0f) {
-        getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(1.0f);
-    } else {
-        getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(0.0f);
-    }
+    getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(0.0f);
+    getAPVTS().getParameter("sys_wf_send")->setValueNotifyingHost(0.5f);
     }
 
 

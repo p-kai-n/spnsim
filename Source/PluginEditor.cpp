@@ -515,7 +515,7 @@ void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& param
         const auto js_args_json = juce::JSON::toString(json.get());
         javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
     }
-    else if (parameterID == "sys_wf_send") {
+    else if (parameterID == "sys_wf_send" && newValue != 0.0f) {
         json->setProperty("parameterName", "sys_wf_send");
         json->setProperty("wf0max", sys_wf0_max);
         json->setProperty("wf0min", sys_wf0_min);
