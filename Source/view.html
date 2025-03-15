@@ -40,7 +40,8 @@ table {
 	padding: 0 6px;
 	height: 18px;
 	margin-bottom: 1px;
-	border: 1px solid var(--bg);
+	background-color: rgba(0, 0, 0, 0);
+	border: 1px solid rgba(0, 0, 0, 0);
 	transition: background-color 0.15s, border-color 0.15s;
 }
 .toolbar_text:hover {
@@ -499,7 +500,7 @@ textarea, #ce_overlay, #ce_lines {
 	<div class="toolbar"><div class="toolbar_inner" id="t_f" style="display:none;"><table>
 	<tr id="t_f_open"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Open</td><td class="toolbar_inner_cmd">Ctrl + O</td></tr>
 	<tr id="t_f_save"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Save</td><td class="toolbar_inner_cmd">Ctrl + S</td></tr>
-	<tr id="t_f_saveas"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Save As</td><td class="toolbar_inner_cmd">Ctrl + Shift + S</td></tr>
+	<tr id="t_f_saveas"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Save As</td><td class="toolbar_inner_cmd"><!-- Ctrl + Shift + S --></td></tr>
 	<tr><td class="toolbar_inner_hr" colspan="3"><hr></td></tr>
 	<tr id="t_f_close"><td class="toolbar_inner_chk"></td><td class="toolbar_inner_txt">Close</td><td class="toolbar_inner_cmd">Ctrl + W</td></tr>
 	</table></div><span class="toolbar_text" id="t_file">File</span></div>
@@ -2716,27 +2717,46 @@ function openTt() {
 body.addEventListener("mousedown", function () {closeTf();closeTv();closeTt();});
 body.addEventListener("contextmenu", function () {event.preventDefault();});
 codeeditor.addEventListener("contextmenu", function () {event.stopPropagation();});
-
+body.addEventListener("keydown", function () {
+	if (event.key === "F1" || event.key === "F2" || event.key === "F3" || event.key === "F4" || event.key === "F5" || event.key === "F6" ||
+		event.key === "F7" || event.key === "F8" || event.key === "F9" || event.key === "F10" || event.key === "F11" || event.key === "F12" ||
+		event.key === "Tab") {
+		event.preventDefault();
+	}
+	else if ((event.ctrlKey || event.metaKey) && (event.key === "o" || event.key === "O")) {
+		event.preventDefault();
+		callOpen();
+	}
+	else if ((event.ctrlKey || event.metaKey) && (!event.shiftKey) && (event.key === "s" || event.key === "S")) {
+		event.preventDefault();
+		callSave();
+	}
+	/*else if ((event.ctrlKey || event.metaKey) && (event.shiftKey) && (event.key === "s" || event.key === "S")) {
+		event.preventDefault();
+		callSaveAs();
+	}*/
+	else if ((event.ctrlKey || event.metaKey) && (event.key === "w" || event.key === "W")) {
+		event.preventDefault();
+		callClose();
+	}
+	else if ((event.ctrlKey || event.metaKey) && (event.key === "d" || event.key === "D")) {
+		event.preventDefault();
+		switchDark();
+	}
+	else if (event.ctrlKey || event.metaKey) {
+		event.preventDefault();
+	}
+});
 
 function drawMenuChk(t) {
 	t.innerHTML = 
 "<svg width='18' height='18'><line x1='5.5' y1='8' x2='9.1' y2='11.5' stroke='black' stroke-width='1.1' /><line x1='9' y1='11' x2='15' y2='5' stroke='black' stroke-width='1.1' /></svg>";
 };
 
-t_f.addEventListener("mousedown", function () {event.stopPropagation();});
-t_file.addEventListener("mousedown", function () {
-	event.stopPropagation();
-	if (show_t_f == false) {openTf();} else {closeTf();}
-});
-t_file.addEventListener("mouseenter", function () {
-	if (show_t_f == true || show_t_v == true || show_t_t == true) {openTf();closeTv();closeTt();}
-});
-t_f_open.addEventListener("mouseup", function () {
-	closeTf();
+function callOpen() {
 	onCalled({callName:"open", callArg:0});
-});
-t_f_save.addEventListener("mouseup", function () {
-	closeTf();
+};
+function callSave() {
 	if (filename == "") {
 		onCalled({callName:"saveas", callArg:0});
 	} else {
@@ -2744,14 +2764,11 @@ t_f_save.addEventListener("mouseup", function () {
 		filename_label.innerText = filename;
 		onCalled({callName:"save", callArg:0});
 	}
-});
-t_f_saveas.addEventListener("mouseup", function () {
-	closeTf();
+};
+function callSaveAs() {
 	onCalled({callName:"saveas", callArg:0});
-});
-t_f_close.addEventListener("mouseup", function () {
-	closeTf();
-
+};
+function callClose() {
 	codeeditor.value = "";
 	filename_label.innerText = "";
 	filename_label.style = "display:none;";
@@ -2762,7 +2779,21 @@ t_f_close.addEventListener("mouseup", function () {
 
 	onCalled({callName:"close", callArg:0});
 	onTextChanged({textName:"code", textContent:codeeditor.value});
+};
+
+
+t_f.addEventListener("mousedown", function () {event.stopPropagation();});
+t_file.addEventListener("mousedown", function () {
+	event.stopPropagation();
+	if (show_t_f == false) {openTf();} else {closeTf();}
 });
+t_file.addEventListener("mouseenter", function () {
+	if (show_t_f == true || show_t_v == true || show_t_t == true) {openTf();closeTv();closeTt();}
+});
+t_f_open.addEventListener("mouseup", function () {closeTf();callOpen();});
+t_f_save.addEventListener("mouseup", function () {closeTf();callSave();});
+t_f_saveas.addEventListener("mouseup", function () {closeTf();callSaveAs();});
+t_f_close.addEventListener("mouseup", function () {closeTf();callClose();});
 
 darkUI = false;
 function setLight() {
@@ -2814,6 +2845,7 @@ function setLight() {
 	body.style.setProperty("--sh-mem", "#167584");
 	body.style.setProperty("--sh-equ", "#C05656");
 	body.style.setProperty("--sh-flag", "#1659DF");
+
 	ce_overlay.style.mixBlendMode = "screen";
 	edit_area.style = "";
 	edit_area_right.style = "";
@@ -2871,6 +2903,7 @@ function setDark() {
 	body.style.setProperty("--sh-mem", "#6DB9C5");
 	body.style.setProperty("--sh-equ", "#F5A0A0");
 	body.style.setProperty("--sh-flag", "#6DA2FF");
+
 	ce_overlay.style.mixBlendMode = "multiply";
 	edit_area.style.backgroundColor = "#FFF";
 	edit_area_right.style.opacity = "0.88";
@@ -2879,6 +2912,15 @@ function setDark() {
 	if (mute == true) {setMute();} else {clearMute();}
 };
 setLight();
+function switchDark() {
+	if (darkUI == true) {
+		setLight();
+		onCalled({callName:"ui_dark", callArg:0});
+	} else {
+		setDark();
+		onCalled({callName:"ui_dark", callArg:1});
+	}
+}
 function setSize(s) {
 	size = s;
 	if (s == 3) {
@@ -2951,13 +2993,7 @@ t_v_font.addEventListener("mouseup", function () {
 });
 t_v_dark.addEventListener("mouseup", function () {
 	closeTv();
-	if (darkUI == true) {
-		setLight();
-		onCalled({callName:"ui_dark", callArg:0});
-	} else {
-		setDark();
-		onCalled({callName:"ui_dark", callArg:1});
-	}
+	switchDark();
 });
 t_v_reset.addEventListener("mouseup", function () {
 	closeTv();
@@ -3088,20 +3124,28 @@ function onParameterChanged(jsonData){
 		if (jValue > 0.5) {setMute();} else {clearMute();}
 	}
 	else if (parameterName === "pot0_ctrl" && dragging == false) {
-		if (jValue > 0.998) {knob0value = 1;} else {knob0value = jValue;}
-		calcKnobValue(sim_knob0, knob0value, 0);
+		if (jValue == 0) {knob0reset();} else {
+			if (jValue > 0.998) {knob0value = 1;} else {knob0value = jValue;}
+			calcKnobValue(sim_knob0, knob0value, 0);
+		}
 	}
 	else if (parameterName === "pot1_ctrl" && dragging == false) {
-		if (jValue > 0.998) {knob1value = 1;} else {knob1value = jValue;}
-		calcKnobValue(sim_knob1, knob1value, 0);
+		if (jValue == 1) {knob0reset();} else {
+			if (jValue > 0.998) {knob1value = 1;} else {knob1value = jValue;}
+			calcKnobValue(sim_knob1, knob1value, 0);
+		}
 	}
 	else if (parameterName === "pot2_ctrl" && dragging == false) {
-		if (jValue > 0.998) {knob2value = 1;} else {knob2value = jValue;}
-		calcKnobValue(sim_knob2, knob2value, 0);
+		if (jValue == 2) {knob0reset();} else {
+			if (jValue > 0.998) {knob2value = 1;} else {knob2value = jValue;}
+			calcKnobValue(sim_knob2, knob2value, 0);
+		}
 	}
 	else if (parameterName === "pot3_ctrl" && dragging == false) {
-		if (jValue > 0.998) {knob3value = 1;} else {knob3value = jValue;}
-		calcKnobValue(sim_knob3, knob3value, 0);
+		if (jValue == 3) {knob0reset();} else {
+			if (jValue > 0.998) {knob3value = 1;} else {knob3value = jValue;}
+			calcKnobValue(sim_knob3, knob3value, 0);
+		}
 	}
 	else if (parameterName === "knob_name" && dragging == false) {
 		knob_name = Math.round(jValue);
@@ -3182,7 +3226,7 @@ function onParameterChanged(jsonData){
 	else if (parameterName === "sys_rs") {
 		if (jValue > 0.5) {setResampling();} else {clearResampling();}
 	}
-}
+};
 onInitialUpdate();
 </script>
 
