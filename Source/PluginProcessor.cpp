@@ -1032,15 +1032,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
 
         if (resampling == true) {
-            if (buffCounter == 0) {
-                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
-                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
-            } else if (buffCounter == 1) {
-                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
-                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
-            } else {
+            if (buffCounter == 2) {
                 lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 0) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
                 rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 0) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+            } else if (buffCounter == 0) {
+                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
+                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 1) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
+            } else {
+                lOutput[samplesIdx] = float((lOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
+                rOutput[samplesIdx] = float((rOutput_prev[std::clamp(((buffLength * 2) + samplesIdx) * 2, 0, bm)] * outgain) + (rBypass * (1 - bypassgain)) + rDry) * mutegain;
             }
         } else {
             lOutput[samplesIdx] = float((lOutput_buff[std::clamp((samplesIdx), 0, bm)] * outgain) + (lBypass * (1 - bypassgain)) + lDry) * mutegain;
