@@ -1,6 +1,4 @@
 # Short Codes for spnsim
-A simulator of ".spn" files for FV-1.<br><br>
-
 ### NOP
 ```
 has no short codes
