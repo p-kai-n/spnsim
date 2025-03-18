@@ -29,7 +29,7 @@ The Memoly Declarations, Memoly Numbers, REG and CONST Equatements, Registers, F
 
 ### Short Codes
 Typing the 2-caracter at lowercase in line start, it makes the full instructions (and typical arguments).<br>
-[Learn more](ShortCodes.md)<br><br>
+[Learn more...](ShortCodes.md)<br><br>
 
 ### Font Familly & Size & Line Height Customize<br>
 The code editor is highly customizable.<br><br>
