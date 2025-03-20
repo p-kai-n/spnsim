@@ -20,7 +20,7 @@ The Waveform Viewers display the register value ​​and allows you to select w
 The values ​​of POT0-2 are automatically transferred to the registers at before calculation of a sample.<br>
 The POT3 has 2 functions and allows you to select.<br>
 "Dry Mix Mode" ... The POT3 adjusts the dry signal level. POT0-2 can be assigned other functions.<br>
-"Register Assignment Mode" ... The values ​​of POT3 are transferred to the REG0-31 like POT0-2.<br><br>
+"Register Assignment Mode" ... The values ​​of POT3 is transferred to the REG0-31 like POT0-2.<br><br>
 
 ### 2/3 Resampling
 Decimate the samples to 2/3 and interpolate samples after spn processing.<br>
