@@ -171,13 +171,16 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         }
         else if (juce_json[0]["callName"] == "ui_size") {
             if (a == 3.0f) {
-                safe_this->valueTreeState.getParameter("ui_size")->setValueNotifyingHost(3.0f * 0.1f);
+                safe_this->valueTreeState.getParameter("ui_size_x")->setValueNotifyingHost(640.0f * 0.0005f);
+                safe_this->valueTreeState.getParameter("ui_size_y")->setValueNotifyingHost(360.0f * 0.0005f);
                 safe_this->setSize(640, 360);
             } else if (a == 7.0f) {
-                safe_this->valueTreeState.getParameter("ui_size")->setValueNotifyingHost(7.0f * 0.1f);
+                safe_this->valueTreeState.getParameter("ui_size_x")->setValueNotifyingHost(1280.0f * 0.0005f);
+                safe_this->valueTreeState.getParameter("ui_size_y")->setValueNotifyingHost(720.0f * 0.0005f);
                 safe_this->setSize(1280, 720);
             } else {
-                safe_this->valueTreeState.getParameter("ui_size")->setValueNotifyingHost(1.0f * 0.1f);
+                safe_this->valueTreeState.getParameter("ui_size_x")->setValueNotifyingHost(1920.0f * 0.0005f);
+                safe_this->valueTreeState.getParameter("ui_size_y")->setValueNotifyingHost(1080.0f * 0.0005f);
                 safe_this->setSize(1920, 1080);
             }
         }
@@ -379,7 +382,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         safe_this->parameterChanged("sys_wf1_sel", safe_this->valueTreeState.getRawParameterValue("sys_wf1_sel")->load());
         safe_this->parameterChanged("sys_wf2_sel", safe_this->valueTreeState.getRawParameterValue("sys_wf2_sel")->load());
         safe_this->parameterChanged("sys_wf3_sel", safe_this->valueTreeState.getRawParameterValue("sys_wf3_sel")->load());
-        safe_this->parameterChanged("ui_size", safe_this->valueTreeState.getRawParameterValue("ui_size")->load());
         safe_this->parameterChanged("ui_dark", safe_this->valueTreeState.getRawParameterValue("ui_dark")->load());
         safe_this->parameterChanged("ui_lh", safe_this->valueTreeState.getRawParameterValue("ui_lh")->load());
         safe_this->parameterChanged("ui_fs", safe_this->valueTreeState.getRawParameterValue("ui_fs")->load());
@@ -422,13 +424,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    if (valueTreeState.getRawParameterValue("ui_size")->load() == 3.0f) {
-        setSize(640, 360);
-    } else if (valueTreeState.getRawParameterValue("ui_size")->load() == 7.0f) {
-        setSize(1280, 720);
-    } else {
-        setSize(1920, 1080);
-    }
+    setSize(int(round(valueTreeState.getRawParameterValue("ui_size_x")->load())), int(round(valueTreeState.getRawParameterValue("ui_size_y")->load())));
     setResizeLimits(640, 360, 1920, 1080);
     setResizable (true, true);
 }
@@ -455,17 +451,11 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AudioPluginAudioProcessorEditor::resized()
 {
-    /*auto rect_ui = getLocalBounds();
-
-    auto gainRect = rect_ui.removeFromTop (paramControlHeight);
-    sys_ingainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
-    sys_ingainSlider.setBounds (gainRect);
-
-    invertButton.setBounds (rect_ui.removeFromTop (paramControlHeight));*/
-
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     juceWebViewHolder->setBounds (getLocalBounds());
+    valueTreeState.getParameter("ui_size_x")->setValueNotifyingHost(float(getLocalBounds().getWidth()) * 0.0005f);
+    valueTreeState.getParameter("ui_size_y")->setValueNotifyingHost(float(getLocalBounds().getHeight()) * 0.0005f);
 }
 
 void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& parameterID, float newValue)
@@ -560,12 +550,6 @@ void AudioPluginAudioProcessorEditor::parameterChanged(const juce::String& param
     }
     else if (parameterID == "ui_dark") {
         json->setProperty("parameterName", "ui_dark");
-        json->setProperty("parameterValue", newValue);
-        const auto js_args_json = juce::JSON::toString(json.get());
-        javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");
-    }
-    else if (parameterID == "ui_size") {
-        json->setProperty("parameterName", "ui_size");
         json->setProperty("parameterValue", newValue);
         const auto js_args_json = juce::JSON::toString(json.get());
         javascript = juce::String("onParameterChanged(") + js_args_json + juce::String(")");

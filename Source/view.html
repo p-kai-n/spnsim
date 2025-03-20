@@ -432,6 +432,9 @@ textarea, #ce_overlay, #ce_lines {
 .ce_flag {
 	background-color: var(--sh-flag);
 }
+.ce_lfo {
+	background-color: var(--sh-lfo);
+}
 #ce_lines {
 	padding-right: 10px;
 	width: 48px;
@@ -1084,45 +1087,64 @@ function setOverlay(txt) {
 			txt += "<span class='ce_equ'>" + arrtemp[0];
 		}
 
-		else if (arrtemp[0].toUpperCase().substring(0, 4) == "LDAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "MULX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
-			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
-				"<span class='ce_reg'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""));
+		else if (arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "LDAX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "MULX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(4).replace(/\s+/, ""),
+				"<span class='ce_reg'>" + arrtemp[0].substring(4).replace(/\s+/, ""));
 		}
 
-		else if (arrtemp[0].toUpperCase().substring(0, 4) == "RDAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "WRAX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "RDFX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "WRHX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "WRLX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
-			 arrtemp[0].toUpperCase().substring(0, 4) == "MAXX" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+		else if (arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "RDAX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WRAX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "RDFX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WRHX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WRLX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+			arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "MAXX " && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
 			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
 				"<span class='ce_reg'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
 		}
 
-		else if (arrtemp[0].toUpperCase().substring(0, 4) == "WRAP" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+		else if (arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WRAP " && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
 			txt += arrtemp[0].replace(arrtemp[0].substring(4).split(",")[0].replace(/\s+/, ""),
 				"<span class='ce_mem'>" + arrtemp[0].substring(4).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
 		}
-		else if (arrtemp[0].toUpperCase().substring(0, 3) == "RDA" && arrtemp[0].replace(/\s+/g, "").substring(4) != "" ||
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "RDA " && arrtemp[0].replace(/\s+/g, "").substring(3) != "" ||
 				arrtemp[0].toUpperCase().substring(0, 3) == "WRA" && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
 			txt += arrtemp[0].replace(arrtemp[0].substring(3).split(",")[0].replace(/\s+/, ""),
 				"<span class='ce_mem'>" + arrtemp[0].substring(3).split(",")[0].replace(/\s+/, "") + "</span>") + "<span>";
 		}
 
-		else if (arrtemp[0].toUpperCase().substring(0, 3) == "CHO" && arrtemp[0].toUpperCase().indexOf("RDA") != -1 &&
-			arrtemp[0].toUpperCase().indexOf("RDAL") == -1 ) {
-			txt += arrtemp[0].split(",")[0] + "," + arrtemp[0].split(",")[1] +
+		else if (arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WLDS " && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].split(",")[0].replace(arrtemp[0].split(",")[0].substring(4).replace(/\s+/, ""),
+				"<span class='ce_lfo'>" + arrtemp[0].split(",")[0].substring(4).replace(/\s+/, "") + "</span>") + 
+				"," + arrtemp[0].split(",")[1] + "," + arrtemp[0].split(",")[2] + "<span>";
+		}
+		else if (arrtemp[0].toUpperCase().substring(0, 5).replace(/\s+/g, " ") == "WLDR " && arrtemp[0].replace(/\s+/g, "").substring(4) != "") {
+			txt += arrtemp[0].split(",")[0].replace(arrtemp[0].split(",")[0].substring(4).replace(/\s+/, ""),
+				"<span class='ce_lfo'>" + arrtemp[0].split(",")[0].substring(4).replace(/\s+/, "") + "</span>") + 
+				"," + arrtemp[0].split(",")[1] + "," + arrtemp[0].split(",")[2] + "<span>";
+		}
+
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "CHO " && arrtemp[0].replace(/\s+/g, "").substring(3) != "" &&
+			arrtemp[0].toUpperCase().indexOf("RDAL") != -1) {
+			txt += arrtemp[0].split(",")[0] +
+				",<span class='ce_lfo'>" + arrtemp[0].split(",")[1];
+		}
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "CHO " && arrtemp[0].replace(/\s+/g, "").substring(3) != "" &&
+			arrtemp[0].toUpperCase().indexOf("RDA") != -1 && arrtemp[0].toUpperCase().indexOf("RDAL") == -1 ) {
+			txt += arrtemp[0].split(",")[0] +
+				",<span class='ce_lfo'>" + arrtemp[0].split(",")[1] + "</span>" + 
 				",<span class='ce_flag'>" + arrtemp[0].split(",")[2] + "</span>" + 
 				",<span class='ce_mem'>" + arrtemp[0].split(",")[3];
 		}
-		else if (arrtemp[0].toUpperCase().substring(0, 3) == "CHO" && arrtemp[0].toUpperCase().indexOf("SOF") != -1) {
-			txt += arrtemp[0].split(",")[0] + "," + arrtemp[0].split(",")[1] +
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "CHO " && arrtemp[0].replace(/\s+/g, "").substring(3) != "" &&
+			arrtemp[0].toUpperCase().indexOf("SOF") != -1) {
+			txt += arrtemp[0].split(",")[0] +
+				",<span class='ce_lfo'>" + arrtemp[0].split(",")[1] + "</span>" + 
 				",<span class='ce_flag'>" + arrtemp[0].split(",")[2] + "</span>" + 
-				arrtemp[0].split(",")[3] + "<span>";
+				"," + arrtemp[0].split(",")[3] + "<span>";
 		}
 
-		else if (arrtemp[0].toUpperCase().substring(0, 3) == "SKP") {
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "SKP ") {
 			txt += arrtemp[0].split(",")[0].toUpperCase()
 				.replace("NEG", "<span class='ce_flag'>NEG</span>")
 				.replace("GEZ", "<span class='ce_flag'>GEZ</span>")
@@ -1142,7 +1164,7 @@ function setOverlay(txt) {
 		for (let j = 1; j < arrtemp.length; j++) {
 			txt += "</span>" + "<span class='ce_comment'>" + "_" + arrtemp[j];
 		}
-		txt += "</span><br>";
+		txt += "_</span><br>";
 	}
 	ce_overlay.innerHTML = txt;
 };
@@ -2170,12 +2192,12 @@ codeeditor.addEventListener("beforeinput", function () {
 	}
 
 
-	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "h" || codeeditor.value.substring(0, s) == "w" && event.data === "h") {
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "h" || codeeditor.value.substring(0, s) == "f" && event.data === "h") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "WRHX\t");
 	}
-	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "H" || codeeditor.value.substring(0, s) == "w" && event.data === "H") {
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "H" || codeeditor.value.substring(0, s) == "f" && event.data === "H") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "WRHX\tREG, -1.0");
@@ -2183,12 +2205,12 @@ codeeditor.addEventListener("beforeinput", function () {
 	}
 
 
-	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "l" || codeeditor.value.substring(0, s) == "w" && event.data === "l") {
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "l" || codeeditor.value.substring(0, s) == "f" && event.data === "l") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "WRLX\t");
 	}
-	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "L" || codeeditor.value.substring(0, s) == "w" && event.data === "L") {
+	else if (codeeditor.value.substring(s - 2, s) == "\nf" && event.data === "L" || codeeditor.value.substring(0, s) == "f" && event.data === "L") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "WRLX\tREG, -1.0");
@@ -2434,13 +2456,13 @@ codeeditor.addEventListener("beforeinput", function () {
 		document.execCommand("insertText", false, "SKP\tNEG, 1");
 		this.selectionStart = s + 3;this.selectionEnd = s + 3 + 3;
 	}
-	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "N" || codeeditor.value.substring(0, s) == "s" && event.data === "0") {
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "N" || codeeditor.value.substring(0, s) == "s" && event.data === "N") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "SKP\tNEG, 1");
 		this.selectionStart = s + 8;this.selectionEnd = s + 8 + 1;
 	}
-	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "G" || codeeditor.value.substring(0, s) == "s" && event.data === "5") {
+	else if (codeeditor.value.substring(s - 2, s) == "\ns" && event.data === "G" || codeeditor.value.substring(0, s) == "s" && event.data === "G") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "SKP\tGEZ, 1");
@@ -2563,7 +2585,7 @@ codeeditor.addEventListener("beforeinput", function () {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "WLDR\tRMP0, 32767, 4096");
-		this.selectionStart = s + 7;this.selectionEnd = s + 7 + 5;
+		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 5;
 	}
 
 
@@ -2847,6 +2869,7 @@ function setLight() {
 	body.style.setProperty("--sh-mem", "#167584");
 	body.style.setProperty("--sh-equ", "#C05656");
 	body.style.setProperty("--sh-flag", "#1659DF");
+	body.style.setProperty("--sh-lfo", "#7A56B6");
 
 	ce_overlay.style.mixBlendMode = "screen";
 	edit_area.style = "";
@@ -2905,6 +2928,7 @@ function setDark() {
 	body.style.setProperty("--sh-mem", "#6DB9C5");
 	body.style.setProperty("--sh-equ", "#F5A0A0");
 	body.style.setProperty("--sh-flag", "#6DA2FF");
+	body.style.setProperty("--sh-lfo", "#BDA0ED");
 
 	ce_overlay.style.mixBlendMode = "multiply";
 	edit_area.style.backgroundColor = "#FFF";
@@ -2923,26 +2947,6 @@ function switchDark() {
 		onCalled({callName:"ui_dark", callArg:1});
 	}
 }
-function setSize(s) {
-	size = s;
-	if (s == 3) {
-		t_v_s3_c.style.opacity = "1";
-		t_v_s7_c.style = "";
-		t_v_s1_c.style = "";
-		drawMenuChk(t_v_s3_c);
-	} else if (s == 7) {
-		t_v_s3_c.style = "";
-		t_v_s7_c.style.opacity = "1";
-		t_v_s1_c.style = "";
-		drawMenuChk(t_v_s7_c);
-	} else {
-		t_v_s7_c.style = "";
-		t_v_s3_c.style = "";
-		t_v_s1_c.style.opacity = "1";
-		drawMenuChk(t_v_s1_c);
-	}
-};
-setSize(7);
 sf = false;
 function showFont() {
 	sf = true;
@@ -2976,17 +2980,14 @@ t_view.addEventListener("mouseenter", function () {
 });
 t_v_s3.addEventListener("mouseup", function () {
 	closeTv();
-	setSize(3);
 	onCalled({callName:"ui_size", callArg:3});
 });
 t_v_s7.addEventListener("mouseup", function () {
 	closeTv();
-	setSize(7);
 	onCalled({callName:"ui_size", callArg:7});
 });
 t_v_s1.addEventListener("mouseup", function () {
 	closeTv();
-	setSize(1);
 	onCalled({callName:"ui_size", callArg:1});
 });
 t_v_font.addEventListener("mouseup", function () {
@@ -3181,9 +3182,6 @@ function onParameterChanged(jsonData){
 	else if (parameterName === "ui_dark") {
 		if (jValue > 0.5) {setDark();} else {setLight();}
 	}
-	else if (parameterName === "ui_size") {
-		setSize(jValue);
-	}
 	else if (parameterName === "ui_lh") {
 		lineheight = Math.round(jValue);
 	}
@@ -3217,6 +3215,8 @@ function onParameterChanged(jsonData){
 			running = true;
 			sys_runbutton.innerText = "STOP";
 			sys_sim.style = "opacity: 100%;";
+
+			sendMessage("running!");
 
 			opcodes = getOpCode(replaceMemEqu(insts.slice()));
 

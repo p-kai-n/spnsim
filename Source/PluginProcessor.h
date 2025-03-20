@@ -496,10 +496,10 @@ private:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
-    juce::String ui_font;
     juce::File sys_file;
     juce::String sys_edited;
     juce::String sys_code;
+    juce::String ui_font;
     unsigned __int8 sys_running;
     
     const int bm = 8191;
@@ -543,7 +543,8 @@ private:
     std::atomic<float>* sys_wf3_sel = nullptr;
     std::atomic<float>* knob_name = nullptr;
     std::atomic<float>* ui_dark = nullptr;
-    std::atomic<float>* ui_size = nullptr;
+    std::atomic<float>* ui_size_x = nullptr;
+    std::atomic<float>* ui_size_y = nullptr;
     std::atomic<float>* ui_lh = nullptr;
     std::atomic<float>* ui_fs = nullptr;
     std::atomic<float>* sys_rs = nullptr;

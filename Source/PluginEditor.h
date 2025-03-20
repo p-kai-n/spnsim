@@ -33,10 +33,10 @@ public:
 
 private:
     //==============================================================================
-    juce::String& ui_font;
     juce::File& sys_file;
     juce::String& sys_edited;
     juce::String& sys_code;
+    juce::String& ui_font;
     unsigned __int8& sys_running;
     std::array<int, 384>& sim_op;
 
@@ -74,14 +74,16 @@ private:
         saveDialog = std::make_unique<juce::FileChooser>("Save As", sys_file, "*.spn;*.txt");
         auto folderChooserFlags = juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::warnAboutOverwriting;
         saveDialog->launchAsync(folderChooserFlags, [this](const juce::FileChooser& chooser) {
-            juce::File testfile = chooser.getResult();
-            if (testfile.getFileName().matchesWildcard("*.*", true) != true) {
-                testfile = testfile.getFullPathName() + ".spn";
+            if (chooser.getResult().getFileName() != "") {
+                juce::File temp = chooser.getResult();
+                if (temp.getFileName().matchesWildcard("*.*", true) != true) {
+                    temp = temp.getFullPathName() + ".spn";
+                }
+                temp.replaceWithText(sys_code);
+                sys_file = temp;
+                sys_edited = "";
+                parameterChanged("sys_loadfile", 0.0f);
             }
-            testfile.replaceWithText(sys_code);
-            sys_file = chooser.getResult();
-            sys_edited = "";
-            parameterChanged("sys_loadfile", 0.0f);
         });
     }
 

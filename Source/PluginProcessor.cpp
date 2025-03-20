@@ -34,7 +34,8 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     knob_name = parameters->getRawParameterValue("knob_name");
 
     ui_dark = parameters->getRawParameterValue("ui_dark");
-    ui_size = parameters->getRawParameterValue("ui_size");
+    ui_size_x = parameters->getRawParameterValue("ui_size_x");
+    ui_size_y = parameters->getRawParameterValue("ui_size_y");
     ui_lh = parameters->getRawParameterValue("ui_lh");
     ui_fs = parameters->getRawParameterValue("ui_fs");
 
@@ -1207,8 +1208,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_dark", 1 },
         "Dark UI", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_size", 1 },
-        "UI Size", juce::NormalisableRange<float>(0.0f, 10.0f), 7.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_size_x", 1 },
+        "UI Size X", juce::NormalisableRange<float>(0.0f, 2000.0f), 1280.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_size_y", 1 },
+        "UI Size Y", juce::NormalisableRange<float>(0.0f, 2000.0f), 720.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_lh", 1 },
         "UI Line Height", juce::NormalisableRange<float>(0.0f, 100.0f), 1.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "ui_fs", 1 },
