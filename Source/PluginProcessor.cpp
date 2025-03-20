@@ -357,6 +357,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 lInput_dup[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] = lInput[samplesIdx] * ingain;
                 rInput_dup[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] = rInput[samplesIdx] * ingain;
             }
+            lDry_buff = lInput_dup;
+            rDry_buff = rInput_dup;
 
             for (int samplesIdx = 0; samplesIdx < buffLength * 3; samplesIdx++) {
                 lInput_buff2x[std::clamp(samplesIdx * 2, 0, bm)] = lInput_dup[std::clamp(samplesIdx, 0, bm)];
@@ -1027,9 +1029,23 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         float lDry = 0.0f;
         float rDry = 0.0f;
+
         if (int(round(knob_name->load())) == 1 && sys_running > 0) {
-            lDry = lBypass * pot3_ctrlSm.getNextValue();
-            rDry = rBypass * pot3_ctrlSm.getNextValue();
+            if (resampling == true) {
+                if (buffCounter == 2) {
+                    lDry = float(lDry_buff[std::clamp((buffLength * 0) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                    rDry = float(rDry_buff[std::clamp((buffLength * 0) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                } else if (buffCounter == 0) {
+                    lDry = float(lDry_buff[std::clamp((buffLength * 1) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                    rDry = float(rDry_buff[std::clamp((buffLength * 1) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                } else {
+                    lDry = float(lDry_buff[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                    rDry = float(rDry_buff[std::clamp((buffLength * 2) + samplesIdx, 0, bm)] * pot3_ctrlSm.getNextValue());
+                }
+            } else {
+                lDry = lBypass * pot3_ctrlSm.getNextValue();
+                rDry = rBypass * pot3_ctrlSm.getNextValue();
+            }
         }
 
         if (resampling == true) {

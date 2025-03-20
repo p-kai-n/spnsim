@@ -505,6 +505,8 @@ private:
     const int bm = 8191;
     std::array<float, 8192> lInput_dup;//should set bigger array length to support long block size
     std::array<float, 8192> rInput_dup;
+    std::array<float, 8192> lDry_buff;
+    std::array<float, 8192> rDry_buff;
     std::array<float, 8192> lInput_buff2x;
     std::array<float, 8192> rInput_buff2x;
     std::array<float, 8192> lInput_buff2x3d;
