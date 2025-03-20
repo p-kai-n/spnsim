@@ -2124,7 +2124,8 @@ codeeditor.addEventListener("beforeinput", function () {
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "RDAX\tADCR, 1.0");
 		this.selectionStart = s + 10;this.selectionEnd = s + 10 + 3;
-	} else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "C" || codeeditor.value.substring(0, s) == "r" && event.data === "C") {
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nr" && event.data === "C" || codeeditor.value.substring(0, s) == "r" && event.data === "C") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
 		document.execCommand("insertText", false, "RDAX\tADCL, 0.5\nRDAX\tADCR, 0.5");
