@@ -2,8 +2,8 @@
 A simulator of ".spn" files for FV-1.<br>
 ![0_tremolo](img/0_tremolo.png)<br>
 ![1_chorus](img/1_chorus.png)<br>
-![2_pots](img/2_pots)<br>
-![3_font](img/3_font)<br><br>
+![2_pots](img/2_pots.png)<br>
+![3_font](img/3_font.png)<br><br>
 
 ## Features(Simulator)
 ### In/Out Gain
