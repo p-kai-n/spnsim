@@ -3044,8 +3044,8 @@ function setFont(f) {
 	ff = f;
 	if (ff == "") {
 		ff = '"Menlo", "Consolas", "Monaco", "Liberation Mono", "Lucida Console", monospace';
-		edit_font.value = ff;
 	}
+	edit_font.value = ff;
 	body.style.setProperty("--code-font", ff);
 };
 edit_ap.addEventListener("click", function () {

@@ -1145,11 +1145,11 @@ void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData
     
     auto state = parameters->copyState();
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
-    xml->setAttribute("font", ui_font);
     xml->setAttribute("file", sys_file.getFullPathName());
     xml->setAttribute("edited", sys_edited);
     xml->setAttribute("code", sys_code);
     xml->setAttribute("run", sys_running);
+    xml->setAttribute("font", ui_font);
     copyXmlToBinary (*xml, destData);
 }
 
@@ -1164,10 +1164,10 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters->state.getType()))
             parameters->replaceState (juce::ValueTree::fromXml (*xmlState));
-            ui_font = xmlState->getStringAttribute("font");
             sys_file = xmlState->getStringAttribute("file");
             sys_edited = xmlState->getStringAttribute("edited");
             sys_code = xmlState->getStringAttribute("code");
+            ui_font = xmlState->getStringAttribute("font");
             sys_running = unsigned __int8(xmlState->getIntAttribute("run"));
 }
 
