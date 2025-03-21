@@ -29,7 +29,7 @@ This function works for simulate 32k samplerate on 48k systems. The cutoff frequ
 
 ## Features(Editor)
 ### Syntax Highlighting
-The Memoly Declarations, Memoly Numbers, REG and CONST Equatements, Registers, Flags, SKP lines and labels, and Comments, are highlighted.<br><br>
+The Memoly Declarations, Memoly Numbers, REG and CONST Equatements, Registers, Flags, LFOs, SKP lines and labels, and Comments, are highlighted.<br><br>
 
 ### Short Codes
 Typing the 2-caracter at lowercase in line start, it makes the full instructions (and typical arguments).<br>
