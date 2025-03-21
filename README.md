@@ -24,7 +24,7 @@ The POT3 has 2 functions and allows you to select.<br>
 
 ### 2/3 Resampling
 Decimate the samples to 2/3 and interpolate samples after spn processing.<br>
-This function works for simulate 32kHz samplerate on 48kHz systems. The cutoff frequency and delay time behaves like 32768Hz.<br><br>
+This function works for simulate 32kHz samplerate on 48kHz systems. The cutoff frequency and delay time behave like 32768Hz.<br><br>
 
 
 ## Features(Editor)
