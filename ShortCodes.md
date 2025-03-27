@@ -47,7 +47,7 @@ wC -> WRAX	ADCL, 1.0 + "\n" +
 ### RDFX
 ```
 fx -> RDFX	
-fX -> RDFX	RDFX	REG, 1.0
+fX -> RDFX	REG, 1.0
 ```
 
 ### WRHX
