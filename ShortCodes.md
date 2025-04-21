@@ -71,8 +71,8 @@ mA -> MAXX	REG, 1.0
 ### MULX
 ```
 mu -> MULX	
-mL -> MULX	DACL
-mR -> MULX	DACR
+mL -> MULX	ADCL
+mR -> MULX	ADCR
 m0 -> MULX	POT0
 m1 -> MULX	POT1
 m2 -> MULX	POT2
