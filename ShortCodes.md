@@ -38,10 +38,10 @@ r2 -> RDAX	POT2, 1.0
 ```
 wx -> WRAX	
 wX -> WRAX	REG, 0.0
-wL -> WRAX	ADCL, 0.0
-wR -> WRAX	ADCR, 0.0
-wC -> WRAX	ADCL, 1.0 + "\n" + 
-      WRAX	ADCR, 0.0
+wL -> WRAX	DACL, 0.0
+wR -> WRAX	DACR, 0.0
+wC -> WRAX	DACL, 1.0 + "\n" + 
+      WRAX	DACR, 0.0
 ```
 
 ### RDFX
