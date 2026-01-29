@@ -196,7 +196,9 @@ dR -> WLDR	RMP0, 32767, 4096
 ### JAM
 ```
 jm -> JAM	
-jM -> JAM + "\n"
+jM -> JAM	RMP0
+j0 -> JAM	RMP0
+j1 -> JAM	RMP1
 ```
 
 ### CHO
