@@ -1124,6 +1124,11 @@ function setOverlay(txt) {
 				"," + arrtemp[0].split(",")[1] + "," + arrtemp[0].split(",")[2] + "<span>";
 		}
 
+		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "JAM " && arrtemp[0].replace(/\s+/g, "").substring(3) != "") {
+			txt += arrtemp[0].replace(arrtemp[0].substring(4).replace(/\s+/, ""),
+				"<span class='ce_lfo'>" + arrtemp[0].substring(4).replace(/\s+/, ""));
+		}
+
 		else if (arrtemp[0].toUpperCase().substring(0, 4).replace(/\s+/g, " ") == "CHO " && arrtemp[0].replace(/\s+/g, "").substring(3) != "" &&
 			arrtemp[0].toUpperCase().indexOf("RDAL") != -1) {
 			txt += arrtemp[0].split(",")[0] +
@@ -2593,12 +2598,23 @@ codeeditor.addEventListener("beforeinput", function () {
 	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "m" || codeeditor.value.substring(0, s) == "j" && event.data === "m") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
-		document.execCommand("insertText", false, "JAM");
+		document.execCommand("insertText", false, "JAM\t");
 	}
 	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "M" || codeeditor.value.substring(0, s) == "j" && event.data === "M") {
 		event.preventDefault();
 		this.selectionStart = s - 1;this.selectionEnd = s;
-		document.execCommand("insertText", false, "JAM\n");
+		document.execCommand("insertText", false, "JAM\tRMP0");
+		this.selectionStart = s + 6;this.selectionEnd = s + 6 + 1;
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "0" || codeeditor.value.substring(0, s) == "j" && event.data === "0") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "JAM\tRMP0");
+	}
+	else if (codeeditor.value.substring(s - 2, s) == "\nj" && event.data === "1" || codeeditor.value.substring(0, s) == "j" && event.data === "1") {
+		event.preventDefault();
+		this.selectionStart = s - 1;this.selectionEnd = s;
+		document.execCommand("insertText", false, "JAM\tRMP1");
 	}
 
 

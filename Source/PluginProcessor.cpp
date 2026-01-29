@@ -661,7 +661,21 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
 
             case 27: { //-------- JAM
-                resetRmp1();
+                //resetRmp0();
+                //resetRmp1();
+                //break;
+                if (rmp0use == true || rmp1use == true) {
+                    switch (unsigned __int8(sim_op[i + 1])) {
+                    case 2: { //-- rmp0
+                        resetRmp0();
+                        break;
+                    }
+                    case 3: { //-- rmp1
+                        resetRmp1();
+                        break;
+                    }
+                    }
+                }
                 break;
             }
             case 28: { //-------- CHO RDAL
@@ -713,7 +727,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             case 30: { //-------- CHO RDA
                 if (sin0use == true || sin1use == true || rmp0use == true || rmp1use == true) {
                     switch (unsigned __int16(sim_op[i + 1])) {
-                        //-------- sin0
+                    //-------- sin0
                     case  60: { //-- sin0, sin | reg | compc
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
@@ -754,7 +768,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                         break;
                     }
 
-                            //-------- sin1
+                    //-------- sin1
                     case  61: { //-- sin1, sin | reg | compc
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
@@ -765,36 +779,37 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                         break;
                     }
 
-                    case 101: { //-- sin0, sin | reg | compa
+                    case 101: { //-- sin1, sin | reg | compa
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
                     }
-                    case 121: { //-- sin0, sin | compc | compa
+                    case 121: { //-- sin1, sin | compc | compa
                         getChorus(cho_reg, unsigned __int16(sim_op[i + 2]), -sin1lfo);
                         cho_reg = 0;
                         break;
                     }
 
-                    case  71: { //-- sin0, cos | reg | compc
+                    case  71: { //-- sin1, cos | reg | compc
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
                     }
-                    case  11: { //-- sin0, cos
+                    case  11: { //-- sin1, cos
                         getChorus(cho_reg, unsigned __int16(sim_op[i + 2]), cos1lfo);
                         cho_reg = 0;
                         break;
                     }
 
-                    case 111: { //-- sin0, cos | reg | compa
+                    case 111: { //-- sin1, cos | reg | compa
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
                     }
-                    case 131: { //-- sin0, cos | compc | compa
+                    case 131: { //-- sin1, cos | compc | compa
                         getChorus(cho_reg, unsigned __int16(sim_op[i + 2]), -cos1lfo);
                         cho_reg = 0;
                         break;
                     }
 
+                    //-------- rmp0
                     case  62: { //-- rmp0, reg | compc
                         cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
                         break;
@@ -817,6 +832,32 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                             dram_pre = dram_pre + 32768;
                         }
                         acc = acc + int(float(dram[dram_pre]) * (1.0f - rmp0tplfo));
+                        break;
+                    }
+
+                    //-------- rmp1
+                    case  63: { //-- rmp1, reg | compc
+                        cho_reg = unsigned short(std::clamp(sim_op[i + 2], 0, 32767));
+                        break;
+                    }
+                    case   3: { //-- rmp1, 0
+                        getPitch(cho_reg, unsigned __int16(sim_op[i + 2]), rmp1lfo);
+                        break;
+                    }
+                    case 203: { //-- rmp1, compc | rptr2
+                        break;
+                    }
+                    case 163: { //-- rmp1, rptr2
+                        getPitch(cho_reg, unsigned __int16(sim_op[i + 2]), rmp1sublfo);
+                        break;
+                    }
+
+                    case 323: { //-- rmp1, na
+                        dram_pre = dram_base - unsigned __int16(sim_op[i + 2]);
+                        if (dram_pre < 0) {
+                            dram_pre = dram_pre + 32768;
+                        }
+                        acc = acc + int(float(dram[dram_pre]) * (1.0f - rmp1tplfo));
                         break;
                     }
                     }

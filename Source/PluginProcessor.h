@@ -317,7 +317,7 @@ public:
         text += int(floor(decaddr * 1000.0f));
         DBG(juce::String(text));*/
 
-        acc = int(float(dram[dram_pre0]) * float(1.0f - decaddr)) + int(float(dram[dram_pre1]) * float(decaddr));
+        acc = acc + (int(float(dram[dram_pre0]) * float(1.0f - decaddr)) + int(float(dram[dram_pre1]) * float(decaddr)));
         return acc;
     };
 
@@ -366,7 +366,7 @@ public:
             dram_pre1 = dram_pre1 - 32768;
         }
 
-        acc = int(float(dram[dram_pre0]) * float(1.0f - decaddr)) + int(float(dram[dram_pre1]) * float(decaddr));
+        acc = acc + (int(float(dram[dram_pre0]) * float(1.0f - decaddr)) + int(float(dram[dram_pre1]) * float(decaddr)));
         return acc;
     };
 
@@ -415,17 +415,33 @@ public:
             rmp0subinc = float(1.0f - cyclesPerSample);
         }
 
-        if (rmp0inc < 0.375f) {
-            if (rmp0tplfo >= 1.0f) {
-                rmp0tplfo = 1.0f;
-            } else {
-                rmp0tplfo = rmp0tplfo + (cyclesPerSample * 4.0f);
+        if (rmp0_rate >= 0) {
+            if (rmp0inc < 0.375f) {
+                if (rmp0tplfo >= 1.0f) {
+                    rmp0tplfo = 1.0f;
+                } else {
+                    rmp0tplfo = rmp0tplfo + (cyclesPerSample * 4.0f);
+                }
+            } else if (rmp0inc < 0.875f) {
+                if (rmp0tplfo <= 0.0f) {
+                    rmp0tplfo = 0.0f;
+                } else {
+                    rmp0tplfo = rmp0tplfo - (cyclesPerSample * 4.0f);
+                }
             }
-        } else if (rmp0inc < 0.875f) {
-            if (rmp0tplfo <= 0.0f) {
-                rmp0tplfo = 0.0f;
-            } else {
-                rmp0tplfo = rmp0tplfo - (cyclesPerSample * 4.0f);
+        } else {
+            if (rmp0inc > 0.625f) {
+                if (rmp0tplfo >= 1.0f) {
+                    rmp0tplfo = 1.0f;
+                } else {
+                    rmp0tplfo = rmp0tplfo - (cyclesPerSample * 4.0f);
+                }
+            } else if (rmp0inc > 0.125f) {
+                if (rmp0tplfo <= 0.0f) {
+                    rmp0tplfo = 0.0f;
+                } else {
+                    rmp0tplfo = rmp0tplfo + (cyclesPerSample * 4.0f);
+                }
             }
         }
     };
@@ -475,17 +491,33 @@ public:
             rmp1subinc = float(1.0f - cyclesPerSample);
         }
 
-        if (rmp1inc < 0.375f) {
-            if (rmp1tplfo >= 1.0f) {
-                rmp1tplfo = 1.0f;
-            } else {
-                rmp1tplfo = rmp1tplfo + (cyclesPerSample * 4.0f);
+        if (rmp1_rate >= 0) {
+            if (rmp1inc < 0.375f) {
+                if (rmp1tplfo >= 1.0f) {
+                    rmp1tplfo = 1.0f;
+                } else {
+                    rmp1tplfo = rmp1tplfo + (cyclesPerSample * 4.0f);
+                }
+            } else if (rmp1inc < 0.875f) {
+                if (rmp1tplfo <= 0.0f) {
+                    rmp1tplfo = 0.0f;
+                } else {
+                    rmp1tplfo = rmp1tplfo - (cyclesPerSample * 4.0f);
+                }
             }
-        } else if (rmp1inc < 0.875f) {
-            if (rmp1tplfo <= 0.0f) {
-                rmp1tplfo = 0.0f;
-            } else {
-                rmp1tplfo = rmp1tplfo - (cyclesPerSample * 4.0f);
+        } else {
+            if (rmp1inc > 0.625f) {
+                if (rmp1tplfo >= 1.0f) {
+                    rmp1tplfo = 1.0f;
+                } else {
+                    rmp1tplfo = rmp1tplfo - (cyclesPerSample * 4.0f);
+                }
+            } else if (rmp1inc > 0.125f) {
+                if (rmp1tplfo <= 0.0f) {
+                    rmp1tplfo = 0.0f;
+                } else {
+                    rmp1tplfo = rmp1tplfo + (cyclesPerSample * 4.0f);
+                }
             }
         }
     };
