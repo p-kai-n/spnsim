@@ -459,7 +459,7 @@ public:
         float cyclesPerSecond = float((rmp1_rate * min) * 16.0);
         float cyclesPerSample = float(cyclesPerSecond / 32768.0);
 
-        switch (rmp0_range) {
+        switch (rmp1_range) {
         case  512: {
             cyclesPerSample = cyclesPerSample * 8.0f;
             break;

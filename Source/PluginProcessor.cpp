@@ -718,6 +718,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                         break;
                     }
                     case 363: { //-- rmp1, na | compc
+                        acc = int(acc * rmp1tplfo) + int(sim_op[i + 2]);
                         break;
                     }
                     }
